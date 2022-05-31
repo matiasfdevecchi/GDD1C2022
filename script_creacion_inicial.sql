@@ -1,4 +1,5 @@
 USE [GD1C2022]
+
 GO
 
 ----------------------------------------------------------
@@ -14,6 +15,37 @@ GO
 
 ----------------------------------------------------------
 ----------------- FIN CREACION DE SCHEMA -----------------
+----------------------------------------------------------
+
+
+----------------------------------------------------------
+-------------------- DROPEO DE TABLAS --------------------
+----------------------------------------------------------
+
+DROP TABLE [Data_Center_Group].IncidenteAuto
+DROP TABLE [Data_Center_Group].Incidente
+DROP TABLE [Data_Center_Group].ParadaCambioNeumatico
+DROP TABLE [Data_Center_Group].Parada
+DROP TABLE [Data_Center_Group].TelemetriaNeumatico
+DROP TABLE [Data_Center_Group].TelemetriaFreno
+DROP TABLE [Data_Center_Group].TelemetriaMotor
+DROP TABLE [Data_Center_Group].TelemetriaAuto
+DROP TABLE [Data_Center_Group].TelemetriaCaja
+DROP TABLE [Data_Center_Group].TelemetriaVuelta
+DROP TABLE [Data_Center_Group].Telemetria
+DROP TABLE [Data_Center_Group].Carrera
+DROP TABLE [Data_Center_Group].Sector
+DROP TABLE [Data_Center_Group].Circuito
+DROP TABLE [Data_Center_Group].Auto
+DROP TABLE [Data_Center_Group].Escuderia
+DROP TABLE [Data_Center_Group].Piloto
+DROP TABLE [Data_Center_Group].Neumatico
+DROP TABLE [Data_Center_Group].Freno
+DROP TABLE [Data_Center_Group].Caja
+DROP TABLE [Data_Center_Group].Motor
+
+----------------------------------------------------------
+------------------ FIN DROPEO DE TABLAS ------------------
 ----------------------------------------------------------
 
 
@@ -203,31 +235,46 @@ CREATE TABLE [Data_Center_Group].IncidenteAuto (
 
 
 ----------------------------------------------------------
--------------------- DROPEO DE TABLAS --------------------
+----------------------- MIGRACION ------------------------
 ----------------------------------------------------------
 
-DROP TABLE [Data_Center_Group].IncidenteAuto
-DROP TABLE [Data_Center_Group].Incidente
-DROP TABLE [Data_Center_Group].ParadaCambioNeumatico
-DROP TABLE [Data_Center_Group].Parada
-DROP TABLE [Data_Center_Group].TelemetriaNeumatico
-DROP TABLE [Data_Center_Group].TelemetriaFreno
-DROP TABLE [Data_Center_Group].TelemetriaMotor
-DROP TABLE [Data_Center_Group].TelemetriaAuto
-DROP TABLE [Data_Center_Group].TelemetriaCaja
-DROP TABLE [Data_Center_Group].TelemetriaVuelta
-DROP TABLE [Data_Center_Group].Telemetria
-DROP TABLE [Data_Center_Group].Carrera
-DROP TABLE [Data_Center_Group].Sector
-DROP TABLE [Data_Center_Group].Circuito
-DROP TABLE [Data_Center_Group].Auto
-DROP TABLE [Data_Center_Group].Escuderia
-DROP TABLE [Data_Center_Group].Piloto
-DROP TABLE [Data_Center_Group].Neumatico
-DROP TABLE [Data_Center_Group].Freno
-DROP TABLE [Data_Center_Group].Caja
-DROP TABLE [Data_Center_Group].Motor
+GO
+CREATE PROCEDURE [Data_Center_Group].cargarEscuderias
+AS
+BEGIN
+    INSERT INTO [Data_Center_Group].Escuderia (nombre, nacionalidad)
+	SELECT DISTINCT ESCUDERIA_NOMBRE, ESCUDERIA_NACIONALIDAD
+	FROM gd_esquema.Maestra
+END;
+
+GO
+CREATE PROCEDURE [Data_Center_Group].cargarPilotos
+AS
+BEGIN
+    INSERT INTO [Data_Center_Group].Piloto (nombre, apellido, nacionalidad, fecha_nacimiento)
+	SELECT DISTINCT PILOTO_NOMBRE, PILOTO_APELLIDO, PILOTO_NACIONALIDAD, PILOTO_FECHA_NACIMIENTO
+	FROM gd_esquema.Maestra
+END;
+
+GO
+CREATE PROCEDURE [Data_Center_Group].cargarAutos
+AS
+BEGIN
+    INSERT INTO [Data_Center_Group].Auto(numero, escuderia_nombre, modelo, piloto_codigo)
+	SELECT DISTINCT AUTO_NUMERO, ESCUDERIA_NOMBRE, AUTO_MODELO, (SELECT codigo FROM Piloto WHERE nombre = PILOTO_NOMBRE AND apellido = PILOTO_APELLIDO AND nacionalidad = PILOTO_NACIONALIDAD AND fecha_nacimiento = PILOTO_FECHA_NACIMIENTO)
+	FROM gd_esquema.Maestra
+END;
+
+GO
+EXEC [Data_Center_Group].cargarEscuderias
+EXEC [Data_Center_Group].cargarPilotos
+EXEC [Data_Center_Group].cargarAutos
+
+DROP PROCEDURE [Data_Center_Group].cargarEscuderias
+DROP PROCEDURE [Data_Center_Group].cargarPilotos
+DROP PROCEDURE [Data_Center_Group].cargarAutos
+
 
 ----------------------------------------------------------
------------------- FIN DROPEO DE TABLAS ------------------
+--------------------- FIN MIGRACION ----------------------
 ----------------------------------------------------------
