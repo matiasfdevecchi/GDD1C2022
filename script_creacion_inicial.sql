@@ -265,7 +265,6 @@ BEGIN
 	FROM gd_esquema.Maestra
 END;
 
-
 GO
 CREATE PROCEDURE [Data_Center_Group].cargarCajas
 AS
@@ -308,6 +307,33 @@ BEGIN
 	WHERE TELE_AUTO_CODIGO IS NOT NULL
 END;
 
+GO
+CREATE PROCEDURE [Data_Center_Group].cargarCircuitos
+AS
+BEGIN
+    INSERT INTO [Data_Center_Group].Circuito(codigo, nombre, pais)
+	SELECT DISTINCT CIRCUITO_CODIGO, CIRCUITO_NOMBRE, CIRCUITO_PAIS
+	FROM gd_esquema.Maestra
+END;
+
+GO
+CREATE PROCEDURE [Data_Center_Group].cargarCarreras
+AS
+BEGIN
+    INSERT INTO [Data_Center_Group].Carrera(fecha, clima, total_carrera, cantidad_vueltas, circuito_codigo)
+	SELECT DISTINCT CARRERA_FECHA, CARRERA_CLIMA, CARRERA_TOTAL_CARRERA, CARRERA_CANT_VUELTAS, CIRCUITO_CODIGO
+	FROM gd_esquema.Maestra
+END;
+
+GO
+CREATE PROCEDURE [Data_Center_Group].cargarSectores
+AS
+BEGIN
+    INSERT INTO [Data_Center_Group].Sector(codigo, tipo, circuito_codigo)
+	SELECT DISTINCT CODIGO_SECTOR, SECTO_TIPO, CIRCUITO_CODIGO
+	FROM gd_esquema.Maestra
+END;
+
 
 GO
 EXEC [Data_Center_Group].cargarEscuderias
@@ -316,6 +342,9 @@ EXEC [Data_Center_Group].cargarAutos
 EXEC [Data_Center_Group].cargarCajas
 EXEC [Data_Center_Group].cargarMotores
 EXEC [Data_Center_Group].cargarFrenos
+EXEC [Data_Center_Group].cargarCircuitos
+EXEC [Data_Center_Group].cargarCarreras
+EXEC [Data_Center_Group].cargarSectores
 
 DROP PROCEDURE [Data_Center_Group].cargarEscuderias
 DROP PROCEDURE [Data_Center_Group].cargarPilotos
@@ -323,6 +352,9 @@ DROP PROCEDURE [Data_Center_Group].cargarAutos
 DROP PROCEDURE [Data_Center_Group].cargarCajas
 DROP PROCEDURE [Data_Center_Group].cargarMotores
 DROP PROCEDURE [Data_Center_Group].cargarFrenos
+DROP PROCEDURE [Data_Center_Group].cargarCircuitos
+DROP PROCEDURE [Data_Center_Group].cargarCarreras
+DROP PROCEDURE [Data_Center_Group].cargarSectores
 
 ----------------------------------------------------------
 --------------------- FIN MIGRACION ----------------------
