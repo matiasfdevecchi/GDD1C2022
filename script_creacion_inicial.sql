@@ -265,15 +265,64 @@ BEGIN
 	FROM gd_esquema.Maestra
 END;
 
+
+GO
+CREATE PROCEDURE [Data_Center_Group].cargarCajas
+AS
+BEGIN
+	INSERT INTO [Data_Center_Group].Caja(numero_serie, modelo)
+	SELECT DISTINCT TELE_CAJA_NRO_SERIE, TELE_CAJA_MODELO
+	FROM gd_esquema.Maestra
+	WHERE TELE_AUTO_CODIGO IS NOT NULL
+END;
+
+GO
+CREATE PROCEDURE [Data_Center_Group].cargarMotores
+AS
+BEGIN
+	INSERT INTO [Data_Center_Group].Motor(numero_serie, modelo)
+	SELECT DISTINCT TELE_MOTOR_NRO_SERIE, TELE_MOTOR_MODELO
+	FROM gd_esquema.Maestra
+	WHERE TELE_AUTO_CODIGO IS NOT NULL
+END;
+
+GO
+CREATE PROCEDURE [Data_Center_Group].cargarFrenos
+AS
+BEGIN
+	INSERT INTO [Data_Center_Group].Freno(numero_serie, tamanio_disco)
+	SELECT TELE_FRENO1_NRO_SERIE, TELE_FRENO1_TAMANIO_DISCO
+	FROM gd_esquema.Maestra
+	WHERE TELE_AUTO_CODIGO IS NOT NULL
+	UNION
+	SELECT TELE_FRENO2_NRO_SERIE, TELE_FRENO2_TAMANIO_DISCO
+	FROM gd_esquema.Maestra
+	WHERE TELE_AUTO_CODIGO IS NOT NULL
+	UNION
+	SELECT TELE_FRENO3_NRO_SERIE, TELE_FRENO3_TAMANIO_DISCO
+	FROM gd_esquema.Maestra
+	WHERE TELE_AUTO_CODIGO IS NOT NULL
+	UNION
+	SELECT TELE_FRENO4_NRO_SERIE, TELE_FRENO4_TAMANIO_DISCO
+	FROM gd_esquema.Maestra
+	WHERE TELE_AUTO_CODIGO IS NOT NULL
+END;
+
+
 GO
 EXEC [Data_Center_Group].cargarEscuderias
 EXEC [Data_Center_Group].cargarPilotos
 EXEC [Data_Center_Group].cargarAutos
+EXEC [Data_Center_Group].cargarCajas
+EXEC [Data_Center_Group].cargarMotores
+EXEC [Data_Center_Group].cargarFrenos
 
 DROP PROCEDURE [Data_Center_Group].cargarEscuderias
 DROP PROCEDURE [Data_Center_Group].cargarPilotos
 DROP PROCEDURE [Data_Center_Group].cargarAutos
-
+DROP PROCEDURE [Data_Center_Group].cargarCajas
+DROP PROCEDURE [Data_Center_Group].cargarMotores
+DROP PROCEDURE [Data_Center_Group].cargarFrenos
 
 ----------------------------------------------------------
 --------------------- FIN MIGRACION ----------------------
