@@ -334,6 +334,75 @@ BEGIN
 	FROM gd_esquema.Maestra
 END;
 
+GO
+CREATE PROCEDURE [Data_Center_Group].cargarTelemetrias
+AS
+BEGIN
+    INSERT INTO [Data_Center_Group].Telemetria(codigo, sector_codigo, carrera_codigo, carrera_distancia)
+	SELECT TELE_AUTO_CODIGO, CODIGO_SECTOR, (select codigo FROM [Data_Center_Group].Carrera WHERE fecha = CARRERA_FECHA), TELE_AUTO_DISTANCIA_CARRERA
+	FROM gd_esquema.Maestra
+	WHERE TELE_AUTO_CODIGO IS NOT NULL
+END;
+
+GO
+CREATE PROCEDURE [Data_Center_Group].cargarTelemetriaVueltas
+AS
+BEGIN
+    INSERT INTO [Data_Center_Group].TelemetriaVuelta(telemetria_codigo, numero, distancia, tiempo)
+	SELECT TELE_AUTO_CODIGO, TELE_AUTO_NUMERO_VUELTA, TELE_AUTO_DISTANCIA_VUELTA, TELE_AUTO_TIEMPO_VUELTA
+	FROM gd_esquema.Maestra
+	WHERE TELE_AUTO_CODIGO IS NOT NULL
+END;
+
+GO
+CREATE PROCEDURE [Data_Center_Group].cargarTelemetriaCajas
+AS
+BEGIN
+    INSERT INTO [Data_Center_Group].TelemetriaCaja(telemetria_codigo, caja_numero_serie, temperatura_aceite, rpm, desgaste)
+	SELECT TELE_AUTO_CODIGO, TELE_CAJA_NRO_SERIE, TELE_CAJA_TEMP_ACEITE, TELE_CAJA_RPM, TELE_CAJA_DESGASTE
+	FROM gd_esquema.Maestra
+	WHERE TELE_AUTO_CODIGO IS NOT NULL
+END;
+
+GO
+CREATE PROCEDURE [Data_Center_Group].cargarTelemetriaAutos
+AS
+BEGIN
+    INSERT INTO [Data_Center_Group].TelemetriaAuto(telemetria_codigo, auto_numero, auto_escuderia_nombre, posicion, velocidad, combustible)
+	SELECT TELE_AUTO_CODIGO, AUTO_NUMERO, ESCUDERIA_NOMBRE, TELE_AUTO_POSICION, TELE_AUTO_VELOCIDAD, TELE_AUTO_COMBUSTIBLE
+	FROM gd_esquema.Maestra
+	WHERE TELE_AUTO_CODIGO IS NOT NULL
+END;
+
+GO
+CREATE PROCEDURE [Data_Center_Group].cargarTelemetriaMotores
+AS
+BEGIN
+    INSERT INTO [Data_Center_Group].TelemetriaMotor(telemetria_codigo, motor_numero_serie, potencia, rpm, temperatura_aceite, temperatura_agua)
+	SELECT TELE_AUTO_CODIGO, TELE_MOTOR_NRO_SERIE, TELE_MOTOR_POTENCIA, TELE_MOTOR_RPM, TELE_MOTOR_TEMP_ACEITE, TELE_MOTOR_TEMP_AGUA
+	FROM gd_esquema.Maestra
+	WHERE TELE_AUTO_CODIGO IS NOT NULL
+END;
+
+GO
+CREATE PROCEDURE [Data_Center_Group].cargarParadas
+AS
+BEGIN
+    INSERT INTO [Data_Center_Group].Parada(numero_vuelta, tiempo, auto_numero, auto_escuderia_nombre, carrera_codigo)
+	SELECT PARADA_BOX_VUELTA, PARADA_BOX_TIEMPO, AUTO_NUMERO, ESCUDERIA_NOMBRE, (SELECT codigo FROM [Data_Center_Group].Carrera WHERE fecha = CARRERA_FECHA)
+	FROM gd_esquema.Maestra
+	WHERE PARADA_BOX_TIEMPO IS NOT NULL
+END;
+
+GO
+CREATE PROCEDURE [Data_Center_Group].cargarIncidentes
+AS
+BEGIN
+    INSERT INTO [Data_Center_Group].Incidente(tiempo, bandera, sector_codigo, sector_distancia)
+	SELECT INCIDENTE_TIEMPO, INCIDENTE_BANDERA, CODIGO_SECTOR, SECTOR_DISTANCIA
+	FROM gd_esquema.Maestra
+	WHERE INCIDENTE_TIEMPO IS NOT NULL
+END;
 
 GO
 EXEC [Data_Center_Group].cargarEscuderias
@@ -345,6 +414,13 @@ EXEC [Data_Center_Group].cargarFrenos
 EXEC [Data_Center_Group].cargarCircuitos
 EXEC [Data_Center_Group].cargarCarreras
 EXEC [Data_Center_Group].cargarSectores
+EXEC [Data_Center_Group].cargarTelemetrias
+EXEC [Data_Center_Group].cargarTelemetriaVueltas
+EXEC [Data_Center_Group].cargarTelemetriaCajas
+EXEC [Data_Center_Group].cargarTelemetriaAutos
+EXEC [Data_Center_Group].cargarTelemetriaMotores
+EXEC [Data_Center_Group].cargarParadas
+EXEC [Data_Center_Group].cargarIncidentes
 
 DROP PROCEDURE [Data_Center_Group].cargarEscuderias
 DROP PROCEDURE [Data_Center_Group].cargarPilotos
@@ -355,6 +431,13 @@ DROP PROCEDURE [Data_Center_Group].cargarFrenos
 DROP PROCEDURE [Data_Center_Group].cargarCircuitos
 DROP PROCEDURE [Data_Center_Group].cargarCarreras
 DROP PROCEDURE [Data_Center_Group].cargarSectores
+DROP PROCEDURE [Data_Center_Group].cargarTelemetrias
+DROP PROCEDURE [Data_Center_Group].cargarTelemetriaVueltas
+DROP PROCEDURE [Data_Center_Group].cargarTelemetriaCajas
+DROP PROCEDURE [Data_Center_Group].cargarTelemetriaAutos
+DROP PROCEDURE [Data_Center_Group].cargarTelemetriaMotores
+DROP PROCEDURE [Data_Center_Group].cargarParadas
+DROP PROCEDURE [Data_Center_Group].cargarIncidentes
 
 ----------------------------------------------------------
 --------------------- FIN MIGRACION ----------------------
