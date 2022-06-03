@@ -524,6 +524,15 @@ BEGIN
 	WHERE NEUMATICO4_POSICION_NUEVO IS NOT NULL
 END;
 
+GO
+CREATE PROCEDURE [Data_Center_Group].cargarIncidenteAutos
+AS
+BEGIN
+    INSERT INTO [Data_Center_Group].IncidenteAuto( auto_numero, auto_escuderia_nombre, numero_vuelta, tipo)
+	SELECT AUTO_NUMERO, ESCUDERIA_NOMBRE, INCIDENTE_NUMERO_VUELTA, INCIDENTE_TIPO
+	FROM gd_esquema.Maestra
+END;
+
 
 GO
 EXEC [Data_Center_Group].cargarEscuderias
