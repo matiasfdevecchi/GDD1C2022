@@ -398,7 +398,7 @@ CREATE PROCEDURE [Data_Center_Group].cargarIncidentes
 AS
 BEGIN
     INSERT INTO [Data_Center_Group].Incidente(tiempo, bandera, sector_codigo)
-	SELECT INCIDENTE_TIEMPO, INCIDENTE_BANDERA, CODIGO_SECTOR
+	SELECT DISTINCT INCIDENTE_TIEMPO, INCIDENTE_BANDERA, CODIGO_SECTOR
 	FROM gd_esquema.Maestra
 	WHERE INCIDENTE_TIEMPO IS NOT NULL
 END;
@@ -528,9 +528,10 @@ GO
 CREATE PROCEDURE [Data_Center_Group].cargarIncidenteAutos
 AS
 BEGIN
-    INSERT INTO [Data_Center_Group].IncidenteAuto( auto_numero, auto_escuderia_nombre, numero_vuelta, tipo)
-	SELECT AUTO_NUMERO, ESCUDERIA_NOMBRE, INCIDENTE_NUMERO_VUELTA, INCIDENTE_TIPO
+    INSERT INTO [Data_Center_Group].IncidenteAuto(incidente_codigo, auto_numero, auto_escuderia_nombre, numero_vuelta, tipo)
+	SELECT (SELECT codigo FROM [Data_Center_Group].Incidente WHERE tiempo = INCIDENTE_TIEMPO AND sector_codigo = CODIGO_SECTOR AND bandera = INCIDENTE_BANDERA), AUTO_NUMERO, ESCUDERIA_NOMBRE, INCIDENTE_NUMERO_VUELTA, INCIDENTE_TIPO
 	FROM gd_esquema.Maestra
+	WHERE INCIDENTE_TIEMPO IS NOT NULL
 END;
 
 
@@ -551,6 +552,7 @@ EXEC [Data_Center_Group].cargarTelemetriaAutos
 EXEC [Data_Center_Group].cargarTelemetriaMotores
 EXEC [Data_Center_Group].cargarParadas
 EXEC [Data_Center_Group].cargarIncidentes
+EXEC [Data_Center_Group].cargarIncidenteAutos
 EXEC [Data_Center_Group].cargarNeumaticos
 EXEC [Data_Center_Group].cargarTelemetriaNeumaticos
 EXEC [Data_Center_Group].cargarTelemetriaFrenos
@@ -572,6 +574,7 @@ DROP PROCEDURE [Data_Center_Group].cargarTelemetriaAutos
 DROP PROCEDURE [Data_Center_Group].cargarTelemetriaMotores
 DROP PROCEDURE [Data_Center_Group].cargarParadas
 DROP PROCEDURE [Data_Center_Group].cargarIncidentes
+DROP PROCEDURE [Data_Center_Group].cargarIncidenteAutos
 DROP PROCEDURE [Data_Center_Group].cargarNeumaticos
 DROP PROCEDURE [Data_Center_Group].cargarTelemetriaNeumaticos
 DROP PROCEDURE [Data_Center_Group].cargarTelemetriaFrenos
