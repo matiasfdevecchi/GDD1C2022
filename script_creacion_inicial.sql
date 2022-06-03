@@ -25,8 +25,8 @@ DROP TABLE [Data_Center_Group].IncidenteAuto
 DROP TABLE [Data_Center_Group].Incidente
 DROP TABLE [Data_Center_Group].ParadaCambioNeumatico
 DROP TABLE [Data_Center_Group].Parada
-DROP TABLE [Data_Center_Group].TelemetriaNeumatico
 DROP TABLE [Data_Center_Group].TelemetriaFreno
+DROP TABLE [Data_Center_Group].TelemetriaNeumatico
 DROP TABLE [Data_Center_Group].TelemetriaMotor
 DROP TABLE [Data_Center_Group].TelemetriaAuto
 DROP TABLE [Data_Center_Group].TelemetriaCaja
@@ -136,51 +136,50 @@ CREATE TABLE [Data_Center_Group].TelemetriaVuelta (
 );
 
 CREATE TABLE [Data_Center_Group].TelemetriaCaja (
-	telemetria_codigo DECIMAL(18,0) NOT NULL FOREIGN KEY REFERENCES [Data_Center_Group].Telemetria(codigo),
+	telemetria_codigo DECIMAL(18,0) NOT NULL PRIMARY KEY FOREIGN KEY REFERENCES [Data_Center_Group].Telemetria(codigo),
 	caja_numero_serie NVARCHAR(255) NOT NULL FOREIGN KEY REFERENCES [Data_Center_Group].Caja(numero_serie),
 	temperatura_aceite DECIMAL(18,2) NOT NULL,
 	rpm DECIMAL(18,2) NOT NULL,
-	desgaste DECIMAL(18,2) NOT NULL,
-	CONSTRAINT telemetria_caja_pk PRIMARY KEY (telemetria_codigo, caja_numero_serie)
+	desgaste DECIMAL(18,2) NOT NULL
 )
 
 CREATE TABLE [Data_Center_Group].TelemetriaAuto (
-	telemetria_codigo DECIMAL(18,0) NOT NULL FOREIGN KEY REFERENCES [Data_Center_Group].Telemetria(codigo),
+	telemetria_codigo DECIMAL(18,0) NOT NULL PRIMARY KEY FOREIGN KEY REFERENCES [Data_Center_Group].Telemetria(codigo),
 	auto_numero INT NOT NULL,
 	auto_escuderia_nombre NVARCHAR(255) NOT NULL,
 	posicion DECIMAL(18,0) NOT NULL,
 	velocidad DECIMAL(18,2) NOT NULL,
 	combustible DECIMAL(18,2) NOT NULL,
-	FOREIGN KEY (auto_numero, auto_escuderia_nombre) REFERENCES [Data_Center_Group].Auto(numero, escuderia_nombre),
-	CONSTRAINT telemetria_auto_pk PRIMARY KEY (telemetria_codigo, auto_numero, auto_escuderia_nombre),
+	FOREIGN KEY (auto_numero, auto_escuderia_nombre) REFERENCES [Data_Center_Group].Auto(numero, escuderia_nombre)
 );
 
 CREATE TABLE [Data_Center_Group].TelemetriaMotor (
-	telemetria_codigo DECIMAL(18,0) NOT NULL FOREIGN KEY REFERENCES [Data_Center_Group].Telemetria(codigo),
+	telemetria_codigo DECIMAL(18,0) NOT NULL PRIMARY KEY FOREIGN KEY REFERENCES [Data_Center_Group].Telemetria(codigo),
 	motor_numero_serie NVARCHAR(255) NOT NULL FOREIGN KEY REFERENCES [Data_Center_Group].Motor(numero_serie),
 	potencia DECIMAL(18,6) NOT NULL,
 	rpm DECIMAL(18,6) NOT NULL,
 	temperatura_aceite DECIMAL(18,6) NOT NULL,
-	temperatura_agua DECIMAL(18,6) NOT NULL,
-	CONSTRAINT telemetria_motor_pk PRIMARY KEY (telemetria_codigo, motor_numero_serie)
-);
-
-CREATE TABLE [Data_Center_Group].TelemetriaFreno (
-	codigo INT NOT NULL IDENTITY PRIMARY KEY,
-	freno_numero_serie NVARCHAR(255) NOT NULL FOREIGN KEY REFERENCES [Data_Center_Group].Freno(numero_serie),
-	grosor_pastilla DECIMAL(18,2) NOT NULL,
-	temperatura DECIMAL(18,2) NOT NULL,
+	temperatura_agua DECIMAL(18,6) NOT NULL
 );
 
 CREATE TABLE [Data_Center_Group].TelemetriaNeumatico (
-	codigo INT NOT NULL IDENTITY PRIMARY KEY,
 	telemetria_codigo DECIMAL(18,0) NOT NULL FOREIGN KEY REFERENCES [Data_Center_Group].Telemetria(codigo),
-	telemetria_freno_codigo INT NOT NULL FOREIGN KEY REFERENCES [Data_Center_Group].TelemetriaFreno(codigo),
 	neumatico_numero_serie NVARCHAR(255) NOT NULL FOREIGN KEY REFERENCES [Data_Center_Group].Neumatico(numero_serie),
 	posicion NVARCHAR(255) NOT NULL,
 	presion DECIMAL(18,2) NOT NULL,
 	profundidad DECIMAL(18,6) NOT NULL,
-	temperatura DECIMAL(18,6) NOT NULL
+	temperatura DECIMAL(18,6) NOT NULL,
+	CONSTRAINT telemetria_neumatico_pk PRIMARY KEY (telemetria_codigo, posicion)
+
+);
+
+CREATE TABLE [Data_Center_Group].TelemetriaFreno (
+	telemetria_codigo DECIMAL(18,0) NOT NULL FOREIGN KEY REFERENCES [Data_Center_Group].Telemetria(codigo),
+	posicion NVARCHAR(255) NOT NULL,
+	freno_numero_serie NVARCHAR(255) NOT NULL FOREIGN KEY REFERENCES [Data_Center_Group].Freno(numero_serie),
+	grosor_pastilla DECIMAL(18,2) NOT NULL,
+	temperatura DECIMAL(18,2) NOT NULL,
+	CONSTRAINT telemetria_neumatico_pk PRIMARY KEY (telemetria_codigo, posicion)
 );
 
 --- TELEMETRIA: FIN ---
