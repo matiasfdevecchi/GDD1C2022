@@ -70,7 +70,7 @@ CREATE TABLE [Data_Center_Group].Piloto (
 
 CREATE TABLE [Data_Center_Group].Neumatico (
 	numero_serie NVARCHAR(255) NOT NULL PRIMARY KEY,
-	tipo NVARCHAR(255) NOT NULL
+	tipo NVARCHAR(255)
 );
 
 CREATE TABLE [Data_Center_Group].Freno (
@@ -114,7 +114,8 @@ CREATE TABLE [Data_Center_Group].Carrera (
 CREATE TABLE [Data_Center_Group].Sector (
 	codigo INT NOT NULL PRIMARY KEY,
 	circuito_codigo INT NOT NULL FOREIGN KEY REFERENCES [Data_Center_Group].Circuito(codigo),
-	tipo NVARCHAR(255)
+	distancia DECIMAL(18,2) NOT NULL,
+	tipo NVARCHAR(255) NOT NULL
 ) 
 
 --- GENERAL: FIN ---
@@ -195,6 +196,7 @@ CREATE TABLE [Data_Center_Group].Parada (
 	auto_escuderia_nombre NVARCHAR(255) NOT NULL,
 	FOREIGN KEY (auto_numero, auto_escuderia_nombre) REFERENCES [Data_Center_Group].Auto(numero, escuderia_nombre),
 	carrera_codigo INT NOT NULL FOREIGN KEY REFERENCES [Data_Center_Group].Carrera(codigo),
+	sector_codigo INT NOT NULL FOREIGN KEY REFERENCES [Data_Center_Group].Sector(codigo)
 );
 
 CREATE TABLE [Data_Center_Group].ParadaCambioNeumatico (
@@ -213,8 +215,7 @@ CREATE TABLE [Data_Center_Group].Incidente (
 	codigo INT NOT NULL IDENTITY PRIMARY KEY,
 	tiempo DECIMAL(18,2) NOT NULL,
 	bandera NVARCHAR(255) NOT NULL,
-	sector_codigo INT NOT NULL FOREIGN KEY REFERENCES [Data_Center_Group].Sector(codigo),
-	sector_distancia DECIMAL(18,2) NOT NULL
+	sector_codigo INT NOT NULL FOREIGN KEY REFERENCES [Data_Center_Group].Sector(codigo)
 );
 
 CREATE TABLE [Data_Center_Group].IncidenteAuto (
@@ -329,8 +330,8 @@ GO
 CREATE PROCEDURE [Data_Center_Group].cargarSectores
 AS
 BEGIN
-    INSERT INTO [Data_Center_Group].Sector(codigo, tipo, circuito_codigo)
-	SELECT DISTINCT CODIGO_SECTOR, SECTO_TIPO, CIRCUITO_CODIGO
+    INSERT INTO [Data_Center_Group].Sector(codigo, tipo, distancia, circuito_codigo)
+	SELECT DISTINCT CODIGO_SECTOR, SECTO_TIPO, SECTOR_DISTANCIA, CIRCUITO_CODIGO
 	FROM gd_esquema.Maestra
 END;
 
@@ -388,8 +389,8 @@ GO
 CREATE PROCEDURE [Data_Center_Group].cargarParadas
 AS
 BEGIN
-    INSERT INTO [Data_Center_Group].Parada(numero_vuelta, tiempo, auto_numero, auto_escuderia_nombre, carrera_codigo)
-	SELECT PARADA_BOX_VUELTA, PARADA_BOX_TIEMPO, AUTO_NUMERO, ESCUDERIA_NOMBRE, (SELECT codigo FROM [Data_Center_Group].Carrera WHERE fecha = CARRERA_FECHA)
+    INSERT INTO [Data_Center_Group].Parada(numero_vuelta, tiempo, auto_numero, auto_escuderia_nombre, carrera_codigo, sector_codigo)
+	SELECT PARADA_BOX_VUELTA, PARADA_BOX_TIEMPO, AUTO_NUMERO, ESCUDERIA_NOMBRE, (SELECT codigo FROM [Data_Center_Group].Carrera WHERE fecha = CARRERA_FECHA), CODIGO_SECTOR
 	FROM gd_esquema.Maestra
 	WHERE PARADA_BOX_TIEMPO IS NOT NULL
 END;
@@ -398,8 +399,8 @@ GO
 CREATE PROCEDURE [Data_Center_Group].cargarIncidentes
 AS
 BEGIN
-    INSERT INTO [Data_Center_Group].Incidente(tiempo, bandera, sector_codigo, sector_distancia)
-	SELECT INCIDENTE_TIEMPO, INCIDENTE_BANDERA, CODIGO_SECTOR, SECTOR_DISTANCIA
+    INSERT INTO [Data_Center_Group].Incidente(tiempo, bandera, sector_codigo)
+	SELECT INCIDENTE_TIEMPO, INCIDENTE_BANDERA, CODIGO_SECTOR
 	FROM gd_esquema.Maestra
 	WHERE INCIDENTE_TIEMPO IS NOT NULL
 END;
