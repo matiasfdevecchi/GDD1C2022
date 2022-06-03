@@ -179,7 +179,7 @@ CREATE TABLE [Data_Center_Group].TelemetriaFreno (
 	freno_numero_serie NVARCHAR(255) NOT NULL FOREIGN KEY REFERENCES [Data_Center_Group].Freno(numero_serie),
 	grosor_pastilla DECIMAL(18,2) NOT NULL,
 	temperatura DECIMAL(18,2) NOT NULL,
-	CONSTRAINT telemetria_neumatico_pk PRIMARY KEY (telemetria_codigo, posicion)
+	CONSTRAINT telemetria_freno_pk PRIMARY KEY (telemetria_codigo, posicion)
 );
 
 --- TELEMETRIA: FIN ---
@@ -459,6 +459,28 @@ BEGIN
 END;
 
 GO
+CREATE PROCEDURE [Data_Center_Group].cargarTelemetriaNeumaticos
+AS
+BEGIN
+    INSERT INTO [Data_Center_Group].TelemetriaNeumatico(telemetria_codigo, posicion, neumatico_numero_serie, presion, profundidad, temperatura)
+	SELECT TELE_AUTO_CODIGO, TELE_NEUMATICO1_POSICION, TELE_NEUMATICO1_NRO_SERIE, TELE_NEUMATICO1_PRESION, TELE_NEUMATICO1_PROFUNDIDAD, TELE_NEUMATICO1_TEMPERATURA
+	FROM gd_esquema.Maestra
+	WHERE TELE_AUTO_CODIGO IS NOT NULL
+	UNION
+	SELECT TELE_AUTO_CODIGO, TELE_NEUMATICO2_POSICION, TELE_NEUMATICO2_NRO_SERIE, TELE_NEUMATICO2_PRESION, TELE_NEUMATICO2_PROFUNDIDAD, TELE_NEUMATICO2_TEMPERATURA
+	FROM gd_esquema.Maestra
+	WHERE TELE_AUTO_CODIGO IS NOT NULL
+	UNION
+	SELECT TELE_AUTO_CODIGO, TELE_NEUMATICO3_POSICION, TELE_NEUMATICO3_NRO_SERIE, TELE_NEUMATICO3_PRESION, TELE_NEUMATICO3_PROFUNDIDAD, TELE_NEUMATICO3_TEMPERATURA
+	FROM gd_esquema.Maestra
+	WHERE TELE_AUTO_CODIGO IS NOT NULL
+	UNION
+	SELECT TELE_AUTO_CODIGO, TELE_NEUMATICO4_POSICION, TELE_NEUMATICO4_NRO_SERIE, TELE_NEUMATICO4_PRESION, TELE_NEUMATICO4_PROFUNDIDAD, TELE_NEUMATICO4_TEMPERATURA
+	FROM gd_esquema.Maestra
+	WHERE TELE_AUTO_CODIGO IS NOT NULL
+END;
+
+GO
 EXEC [Data_Center_Group].cargarEscuderias
 EXEC [Data_Center_Group].cargarPilotos
 EXEC [Data_Center_Group].cargarAutos
@@ -476,6 +498,7 @@ EXEC [Data_Center_Group].cargarTelemetriaMotores
 EXEC [Data_Center_Group].cargarParadas
 EXEC [Data_Center_Group].cargarIncidentes
 EXEC [Data_Center_Group].cargarNeumaticos
+EXEC [Data_Center_Group].cargarTelemetriaNeumaticos
 
 DROP PROCEDURE [Data_Center_Group].cargarEscuderias
 DROP PROCEDURE [Data_Center_Group].cargarPilotos
@@ -494,6 +517,7 @@ DROP PROCEDURE [Data_Center_Group].cargarTelemetriaMotores
 DROP PROCEDURE [Data_Center_Group].cargarParadas
 DROP PROCEDURE [Data_Center_Group].cargarIncidentes
 DROP PROCEDURE [Data_Center_Group].cargarNeumaticos
+DROP PROCEDURE [Data_Center_Group].cargarTelemetriaNeumaticos
 
 ----------------------------------------------------------
 --------------------- FIN MIGRACION ----------------------
