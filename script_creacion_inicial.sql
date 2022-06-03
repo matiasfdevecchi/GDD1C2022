@@ -1,5 +1,4 @@
 USE [GD1C2022]
-
 GO
 
 ----------------------------------------------------------
@@ -406,6 +405,61 @@ BEGIN
 END;
 
 GO
+CREATE PROCEDURE [Data_Center_Group].cargarNeumaticos
+AS
+BEGIN
+    INSERT INTO [Data_Center_Group].Neumatico(numero_serie, tipo)
+	SELECT NEUMATICO1_NRO_SERIE_NUEVO, NEUMATICO1_TIPO_NUEVO
+	FROM gd_esquema.Maestra
+	WHERE PARADA_BOX_TIEMPO IS NOT NULL
+	UNION
+	SELECT NEUMATICO1_NRO_SERIE_VIEJO, NEUMATICO1_TIPO_VIEJO
+	FROM gd_esquema.Maestra
+	WHERE PARADA_BOX_TIEMPO IS NOT NULL
+	UNION
+	SELECT NEUMATICO2_NRO_SERIE_NUEVO, NEUMATICO2_TIPO_NUEVO
+	FROM gd_esquema.Maestra
+	WHERE PARADA_BOX_TIEMPO IS NOT NULL
+	UNION
+	SELECT NEUMATICO2_NRO_SERIE_VIEJO, NEUMATICO2_TIPO_VIEJO
+	FROM gd_esquema.Maestra
+	WHERE PARADA_BOX_TIEMPO IS NOT NULL
+	UNION
+	SELECT NEUMATICO3_NRO_SERIE_NUEVO, NEUMATICO3_TIPO_NUEVO
+	FROM gd_esquema.Maestra
+	WHERE PARADA_BOX_TIEMPO IS NOT NULL
+	UNION
+	SELECT NEUMATICO3_NRO_SERIE_VIEJO, NEUMATICO3_TIPO_VIEJO
+	FROM gd_esquema.Maestra
+	WHERE PARADA_BOX_TIEMPO IS NOT NULL
+	UNION
+	SELECT NEUMATICO4_NRO_SERIE_NUEVO, NEUMATICO4_TIPO_NUEVO
+	FROM gd_esquema.Maestra
+	WHERE PARADA_BOX_TIEMPO IS NOT NULL
+	UNION
+	SELECT NEUMATICO4_NRO_SERIE_VIEJO, NEUMATICO4_TIPO_VIEJO
+	FROM gd_esquema.Maestra
+	WHERE PARADA_BOX_TIEMPO IS NOT NULL
+
+	INSERT INTO [Data_Center_Group].Neumatico(numero_serie, tipo)
+	SELECT TELE_NEUMATICO1_NRO_SERIE, NULL
+	FROM gd_esquema.Maestra
+	WHERE TELE_AUTO_CODIGO IS NOT NULL AND (SELECT COUNT(*) FROM Neumatico n WHERE TELE_NEUMATICO1_NRO_SERIE = n.numero_serie) = 0
+	UNION
+	SELECT TELE_NEUMATICO2_NRO_SERIE, NULL
+	FROM gd_esquema.Maestra
+	WHERE TELE_AUTO_CODIGO IS NOT NULL AND (SELECT COUNT(*) FROM Neumatico n WHERE TELE_NEUMATICO2_NRO_SERIE = n.numero_serie) = 0
+	UNION
+	SELECT TELE_NEUMATICO3_NRO_SERIE, NULL
+	FROM gd_esquema.Maestra
+	WHERE TELE_AUTO_CODIGO IS NOT NULL AND (SELECT COUNT(*) FROM Neumatico n WHERE TELE_NEUMATICO3_NRO_SERIE = n.numero_serie) = 0
+	UNION
+	SELECT TELE_NEUMATICO4_NRO_SERIE, NULL
+	FROM gd_esquema.Maestra
+	WHERE TELE_AUTO_CODIGO IS NOT NULL AND (SELECT COUNT(*) FROM Neumatico n WHERE TELE_NEUMATICO4_NRO_SERIE = n.numero_serie) = 0
+END;
+
+GO
 EXEC [Data_Center_Group].cargarEscuderias
 EXEC [Data_Center_Group].cargarPilotos
 EXEC [Data_Center_Group].cargarAutos
@@ -422,6 +476,7 @@ EXEC [Data_Center_Group].cargarTelemetriaAutos
 EXEC [Data_Center_Group].cargarTelemetriaMotores
 EXEC [Data_Center_Group].cargarParadas
 EXEC [Data_Center_Group].cargarIncidentes
+EXEC [Data_Center_Group].cargarNeumaticos
 
 DROP PROCEDURE [Data_Center_Group].cargarEscuderias
 DROP PROCEDURE [Data_Center_Group].cargarPilotos
@@ -439,6 +494,7 @@ DROP PROCEDURE [Data_Center_Group].cargarTelemetriaAutos
 DROP PROCEDURE [Data_Center_Group].cargarTelemetriaMotores
 DROP PROCEDURE [Data_Center_Group].cargarParadas
 DROP PROCEDURE [Data_Center_Group].cargarIncidentes
+DROP PROCEDURE [Data_Center_Group].cargarNeumaticos
 
 ----------------------------------------------------------
 --------------------- FIN MIGRACION ----------------------
