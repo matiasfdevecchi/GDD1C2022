@@ -481,6 +481,28 @@ BEGIN
 END;
 
 GO
+CREATE PROCEDURE [Data_Center_Group].cargarTelemetriaFrenos
+AS
+BEGIN
+    INSERT INTO [Data_Center_Group].TelemetriaFreno(telemetria_codigo, posicion, freno_numero_serie, grosor_pastilla, temperatura)
+	SELECT TELE_AUTO_CODIGO, TELE_FRENO1_POSICION, TELE_FRENO1_NRO_SERIE, TELE_FRENO1_GROSOR_PASTILLA, TELE_FRENO1_TEMPERATURA
+	FROM gd_esquema.Maestra
+	WHERE TELE_AUTO_CODIGO IS NOT NULL
+	UNION
+	SELECT TELE_AUTO_CODIGO, TELE_FRENO2_POSICION, TELE_FRENO2_NRO_SERIE, TELE_FRENO2_GROSOR_PASTILLA, TELE_FRENO2_TEMPERATURA
+	FROM gd_esquema.Maestra
+	WHERE TELE_AUTO_CODIGO IS NOT NULL
+	UNION
+	SELECT TELE_AUTO_CODIGO, TELE_FRENO3_POSICION, TELE_FRENO3_NRO_SERIE, TELE_FRENO3_GROSOR_PASTILLA, TELE_FRENO3_TEMPERATURA
+	FROM gd_esquema.Maestra
+	WHERE TELE_AUTO_CODIGO IS NOT NULL
+	UNION
+	SELECT TELE_AUTO_CODIGO, TELE_FRENO4_POSICION, TELE_FRENO4_NRO_SERIE, TELE_FRENO4_GROSOR_PASTILLA, TELE_FRENO4_TEMPERATURA
+	FROM gd_esquema.Maestra
+	WHERE TELE_AUTO_CODIGO IS NOT NULL
+END;
+
+GO
 EXEC [Data_Center_Group].cargarEscuderias
 EXEC [Data_Center_Group].cargarPilotos
 EXEC [Data_Center_Group].cargarAutos
@@ -499,6 +521,7 @@ EXEC [Data_Center_Group].cargarParadas
 EXEC [Data_Center_Group].cargarIncidentes
 EXEC [Data_Center_Group].cargarNeumaticos
 EXEC [Data_Center_Group].cargarTelemetriaNeumaticos
+EXEC [Data_Center_Group].cargarTelemetriaFrenos
 
 DROP PROCEDURE [Data_Center_Group].cargarEscuderias
 DROP PROCEDURE [Data_Center_Group].cargarPilotos
@@ -518,7 +541,7 @@ DROP PROCEDURE [Data_Center_Group].cargarParadas
 DROP PROCEDURE [Data_Center_Group].cargarIncidentes
 DROP PROCEDURE [Data_Center_Group].cargarNeumaticos
 DROP PROCEDURE [Data_Center_Group].cargarTelemetriaNeumaticos
-
+DROP PROCEDURE [Data_Center_Group].cargarTelemetriaFrenos
 ----------------------------------------------------------
 --------------------- FIN MIGRACION ----------------------
 ----------------------------------------------------------
