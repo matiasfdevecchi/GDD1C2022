@@ -503,6 +503,29 @@ BEGIN
 END;
 
 GO
+CREATE PROCEDURE [Data_Center_Group].cargarParadasCambioNeumatico
+AS
+BEGIN
+    INSERT INTO [Data_Center_Group].ParadaCambioNeumatico(parada_codigo, posicion, neumatico_viejo_numero_serie, neumatico_nuevo_numero_serie) 
+	SELECT (SELECT codigo FROM [Data_Center_Group].Parada WHERE (tiempo = PARADA_BOX_TIEMPO AND sector_codigo = CODIGO_SECTOR AND auto_escuderia_nombre = ESCUDERIA_NOMBRE)), NEUMATICO1_POSICION_NUEVO, NEUMATICO1_NRO_SERIE_VIEJO, NEUMATICO1_NRO_SERIE_NUEVO
+	FROM gd_esquema.Maestra
+	WHERE NEUMATICO1_POSICION_NUEVO IS NOT NULL
+	UNION
+	SELECT (SELECT codigo FROM [Data_Center_Group].Parada WHERE (tiempo = PARADA_BOX_TIEMPO AND sector_codigo = CODIGO_SECTOR AND auto_escuderia_nombre = ESCUDERIA_NOMBRE)), NEUMATICO2_POSICION_NUEVO, NEUMATICO2_NRO_SERIE_VIEJO, NEUMATICO2_NRO_SERIE_NUEVO
+	FROM gd_esquema.Maestra
+	WHERE NEUMATICO2_POSICION_NUEVO IS NOT NULL
+	UNION
+	SELECT (SELECT codigo FROM [Data_Center_Group].Parada WHERE (tiempo = PARADA_BOX_TIEMPO AND sector_codigo = CODIGO_SECTOR AND auto_escuderia_nombre = ESCUDERIA_NOMBRE)), NEUMATICO3_POSICION_NUEVO, NEUMATICO3_NRO_SERIE_VIEJO, NEUMATICO3_NRO_SERIE_NUEVO
+	FROM gd_esquema.Maestra
+	WHERE NEUMATICO3_POSICION_NUEVO IS NOT NULL
+	UNION
+	SELECT (SELECT codigo FROM [Data_Center_Group].Parada WHERE (tiempo = PARADA_BOX_TIEMPO AND sector_codigo = CODIGO_SECTOR AND auto_escuderia_nombre = ESCUDERIA_NOMBRE)), NEUMATICO4_POSICION_NUEVO, NEUMATICO4_NRO_SERIE_VIEJO, NEUMATICO4_NRO_SERIE_NUEVO
+	FROM gd_esquema.Maestra
+	WHERE NEUMATICO4_POSICION_NUEVO IS NOT NULL
+END;
+
+
+GO
 EXEC [Data_Center_Group].cargarEscuderias
 EXEC [Data_Center_Group].cargarPilotos
 EXEC [Data_Center_Group].cargarAutos
@@ -522,6 +545,7 @@ EXEC [Data_Center_Group].cargarIncidentes
 EXEC [Data_Center_Group].cargarNeumaticos
 EXEC [Data_Center_Group].cargarTelemetriaNeumaticos
 EXEC [Data_Center_Group].cargarTelemetriaFrenos
+EXEC [Data_Center_Group].cargarParadasCambioNeumatico
 
 DROP PROCEDURE [Data_Center_Group].cargarEscuderias
 DROP PROCEDURE [Data_Center_Group].cargarPilotos
@@ -542,6 +566,7 @@ DROP PROCEDURE [Data_Center_Group].cargarIncidentes
 DROP PROCEDURE [Data_Center_Group].cargarNeumaticos
 DROP PROCEDURE [Data_Center_Group].cargarTelemetriaNeumaticos
 DROP PROCEDURE [Data_Center_Group].cargarTelemetriaFrenos
+DROP PROCEDURE [Data_Center_Group].cargarParadasCambioNeumatico
 ----------------------------------------------------------
 --------------------- FIN MIGRACION ----------------------
 ----------------------------------------------------------
