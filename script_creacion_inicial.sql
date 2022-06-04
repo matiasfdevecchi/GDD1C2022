@@ -193,8 +193,7 @@ CREATE TABLE [Data_Center_Group].Parada (
 	auto_numero INT NOT NULL,
 	auto_escuderia_nombre NVARCHAR(255) NOT NULL,
 	FOREIGN KEY (auto_numero, auto_escuderia_nombre) REFERENCES [Data_Center_Group].Auto(numero, escuderia_nombre),
-	carrera_codigo INT NOT NULL FOREIGN KEY REFERENCES [Data_Center_Group].Carrera(codigo),
-	sector_codigo INT NOT NULL FOREIGN KEY REFERENCES [Data_Center_Group].Sector(codigo)
+	carrera_codigo INT NOT NULL FOREIGN KEY REFERENCES [Data_Center_Group].Carrera(codigo)
 );
 
 CREATE TABLE [Data_Center_Group].ParadaCambioNeumatico (
@@ -384,16 +383,6 @@ BEGIN
 END;
 
 GO
-CREATE PROCEDURE [Data_Center_Group].cargarParadas
-AS
-BEGIN
-    INSERT INTO [Data_Center_Group].Parada(numero_vuelta, tiempo, auto_numero, auto_escuderia_nombre, carrera_codigo, sector_codigo)
-	SELECT PARADA_BOX_VUELTA, PARADA_BOX_TIEMPO, AUTO_NUMERO, ESCUDERIA_NOMBRE, (SELECT codigo FROM [Data_Center_Group].Carrera WHERE fecha = CARRERA_FECHA), CODIGO_SECTOR
-	FROM gd_esquema.Maestra
-	WHERE PARADA_BOX_TIEMPO IS NOT NULL
-END;
-
-GO
 CREATE PROCEDURE [Data_Center_Group].cargarIncidentes
 AS
 BEGIN
@@ -502,23 +491,33 @@ BEGIN
 END;
 
 GO
+CREATE PROCEDURE [Data_Center_Group].cargarParadas
+AS
+BEGIN
+    INSERT INTO [Data_Center_Group].Parada(numero_vuelta, tiempo, auto_numero, auto_escuderia_nombre, carrera_codigo)
+	SELECT DISTINCT PARADA_BOX_VUELTA, PARADA_BOX_TIEMPO, AUTO_NUMERO, ESCUDERIA_NOMBRE, (SELECT codigo FROM [Data_Center_Group].Carrera WHERE fecha = CARRERA_FECHA)
+	FROM gd_esquema.Maestra
+	WHERE PARADA_BOX_TIEMPO IS NOT NULL
+END;
+
+GO
 CREATE PROCEDURE [Data_Center_Group].cargarParadasCambioNeumatico
 AS
 BEGIN
     INSERT INTO [Data_Center_Group].ParadaCambioNeumatico(parada_codigo, posicion, neumatico_viejo_numero_serie, neumatico_nuevo_numero_serie) 
-	SELECT (SELECT codigo FROM [Data_Center_Group].Parada WHERE (tiempo = PARADA_BOX_TIEMPO AND sector_codigo = CODIGO_SECTOR AND auto_escuderia_nombre = ESCUDERIA_NOMBRE)), NEUMATICO1_POSICION_NUEVO, NEUMATICO1_NRO_SERIE_VIEJO, NEUMATICO1_NRO_SERIE_NUEVO
+	SELECT (SELECT codigo FROM [Data_Center_Group].Parada WHERE (tiempo = PARADA_BOX_TIEMPO AND auto_escuderia_nombre = ESCUDERIA_NOMBRE)), NEUMATICO1_POSICION_NUEVO, NEUMATICO1_NRO_SERIE_VIEJO, NEUMATICO1_NRO_SERIE_NUEVO
 	FROM gd_esquema.Maestra
 	WHERE NEUMATICO1_POSICION_NUEVO IS NOT NULL
 	UNION
-	SELECT (SELECT codigo FROM [Data_Center_Group].Parada WHERE (tiempo = PARADA_BOX_TIEMPO AND sector_codigo = CODIGO_SECTOR AND auto_escuderia_nombre = ESCUDERIA_NOMBRE)), NEUMATICO2_POSICION_NUEVO, NEUMATICO2_NRO_SERIE_VIEJO, NEUMATICO2_NRO_SERIE_NUEVO
+	SELECT (SELECT codigo FROM [Data_Center_Group].Parada WHERE (tiempo = PARADA_BOX_TIEMPO AND auto_escuderia_nombre = ESCUDERIA_NOMBRE)), NEUMATICO2_POSICION_NUEVO, NEUMATICO2_NRO_SERIE_VIEJO, NEUMATICO2_NRO_SERIE_NUEVO
 	FROM gd_esquema.Maestra
 	WHERE NEUMATICO2_POSICION_NUEVO IS NOT NULL
 	UNION
-	SELECT (SELECT codigo FROM [Data_Center_Group].Parada WHERE (tiempo = PARADA_BOX_TIEMPO AND sector_codigo = CODIGO_SECTOR AND auto_escuderia_nombre = ESCUDERIA_NOMBRE)), NEUMATICO3_POSICION_NUEVO, NEUMATICO3_NRO_SERIE_VIEJO, NEUMATICO3_NRO_SERIE_NUEVO
+	SELECT (SELECT codigo FROM [Data_Center_Group].Parada WHERE (tiempo = PARADA_BOX_TIEMPO AND auto_escuderia_nombre = ESCUDERIA_NOMBRE)), NEUMATICO3_POSICION_NUEVO, NEUMATICO3_NRO_SERIE_VIEJO, NEUMATICO3_NRO_SERIE_NUEVO
 	FROM gd_esquema.Maestra
 	WHERE NEUMATICO3_POSICION_NUEVO IS NOT NULL
 	UNION
-	SELECT (SELECT codigo FROM [Data_Center_Group].Parada WHERE (tiempo = PARADA_BOX_TIEMPO AND sector_codigo = CODIGO_SECTOR AND auto_escuderia_nombre = ESCUDERIA_NOMBRE)), NEUMATICO4_POSICION_NUEVO, NEUMATICO4_NRO_SERIE_VIEJO, NEUMATICO4_NRO_SERIE_NUEVO
+	SELECT (SELECT codigo FROM [Data_Center_Group].Parada WHERE (tiempo = PARADA_BOX_TIEMPO AND auto_escuderia_nombre = ESCUDERIA_NOMBRE)), NEUMATICO4_POSICION_NUEVO, NEUMATICO4_NRO_SERIE_VIEJO, NEUMATICO4_NRO_SERIE_NUEVO
 	FROM gd_esquema.Maestra
 	WHERE NEUMATICO4_POSICION_NUEVO IS NOT NULL
 END;
