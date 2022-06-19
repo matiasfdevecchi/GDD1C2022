@@ -3,7 +3,7 @@ USE [GD1C2022]
 CREATE TABLE [Data_Center_Group].BI_DIM_Tiempo(
 	id INT NOT NULL IDENTITY PRIMARY KEY,
 	anio INT,
-	cuatrimestre INT, //seria 1,2 o 3C
+	cuatrimestre INT,
 );
 
 CREATE TABLE [Data_Center_Group].BI_DIM_Auto (
