@@ -1,0 +1,48 @@
+USE [GD1C2022]
+
+CREATE TABLE [Data_Center_Group].BI_DIM_Tiempo(
+	id INT NOT NULL IDENTITY PRIMARY KEY,
+	anio INT,
+	cuatrimestre INT, //seria 1,2 o 3C
+);
+
+CREATE TABLE [Data_Center_Group].BI_DIM_Auto (
+	id INT NOT NULL IDENTITY PRIMARY KEY,
+	numero INT NOT NULL,
+	modelo NVARCHAR(255) NOT NULL,
+);
+
+CREATE TABLE [Data_Center_Group].BI_DIM_Escuderia (
+	id INT NOT NULL IDENTITY PRIMARY KEY,
+	nombre NVARCHAR(255) NOT NULL,
+);
+
+CREATE TABLE [Data_Center_Group].BI_DIM_CIRCUITO (
+	id INT NOT NULL IDENTITY PRIMARY KEY,
+	codigo INT NOT NULL,
+	nombre NVARCHAR(50),
+	pais NVARCHAR(50)
+);
+
+CREATE TABLE [Data_Center_Group].BI_DIM_PILOTO (
+	codigo INT NOT NULL IDENTITY PRIMARY KEY,
+	nombre NVARCHAR(50) NOT NULL,
+	apellido NVARCHAR(50) NOT NULL,
+	nacionalidad NVARCHAR(50) NOT NULL,
+	fecha_nacimiento DATE NOT NULL,
+);
+
+CREATE TABLE [Data_Center_Group].BI_DIM_Sector (
+	id INT NOT NULL IDENTITY PRIMARY KEY,
+	tipo NVARCHAR(255) NOT NULL,
+);
+
+CREATE TABLE [Data_Center_Group].BI_DIM_Neumatico (
+	id INT NOT NULL IDENTITY PRIMARY KEY,
+	tipo NVARCHAR(255) NOT NULL,
+);
+
+CREATE TABLE [Data_Center_Group].BI_DIM_Incidente (
+	id INT NOT NULL IDENTITY PRIMARY KEY,
+	tipo NVARCHAR(255) NOT NULL,
+);
