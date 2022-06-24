@@ -26,12 +26,12 @@ IF OBJECT_ID('Data_Center_Group.BI_DIM_Neumatico', 'U') IS NOT NULL
     DROP TABLE [Data_Center_Group].BI_DIM_Neumatico;
 IF OBJECT_ID('Data_Center_Group.BI_DIM_IncidenteAuto', 'U') IS NOT NULL
     DROP TABLE [Data_Center_Group].BI_DIM_IncidenteAuto;
-
-/*IF OBJECT_ID('Data_Center_Group.BI_view_desgaste_promedio_cada_auto_x_vuelta_x_circuito', 'V') IS NOT NULL
-    DROP VIEW Data_Center_Group.BI_view_desgaste_promedio_cada_auto_x_vuelta_x_circuito;
-IF OBJECT_ID('Data_Center_Group.BI_view_mejor_tiempo_vuelta_cada_escuderia_x_circuito_x_anio', 'V') IS NOT NULL
-    DROP VIEW Data_Center_Group.BI_view_mejor_tiempo_vuelta_cada_escuderia_x_circuito_x_anio;
-IF OBJECT_ID('Data_Center_Group.BI_view_circuito_mayor_consumo_combustible_promedio', 'V') IS NOT NULL
+	
+IF OBJECT_ID('Data_Center_Group.BI_VIEW_AUX_MejorTiempoCadaVuelta', 'V') IS NOT NULL
+    DROP VIEW [Data_Center_Group].BI_VIEW_AUX_MejorTiempoCadaVuelta;
+IF OBJECT_ID('Data_Center_Group.BI_VIEW_MejorTiempoVuelta', 'V') IS NOT NULL
+    DROP VIEW [Data_Center_Group].BI_VIEW_MejorTiempoVuelta;
+/*IF OBJECT_ID('Data_Center_Group.BI_view_circuito_mayor_consumo_combustible_promedio', 'V') IS NOT NULL
     DROP VIEW Data_Center_Group.BI_view_circuito_mayor_consumo_combustible_promedio;
 IF OBJECT_ID('Data_Center_Group.BI_view_maxima_velocidad_x_auto', 'V') IS NOT NULL
     DROP VIEW Data_Center_Group.BI_view_maxima_velocidad_x_auto;
@@ -432,13 +432,21 @@ CREATE VIEW  Data_Center_Group.BI_view_desgaste_promedio_cada_auto_x_vuelta_x_ci
 --Mejor tiempo de vuelta de cada escuderia por circuito por año
 
 GO
-CREATE VIEW [Data_Center_Group].BI_VIEW_MejorTiempoVuelta AS
-	SELECT tiempo.anio as 'Año', c.nombre as Circuito, numero_vuelta as Vuelta, e.nombre as Escuderia, MIN(t.tiempo_vuelta) as 'Mejor tiempo'
+CREATE VIEW [Data_Center_Group].BI_VIEW_AUX_MejorTiempoCadaVuelta AS
+	SELECT tiempo.anio as anio, c.nombre as circuito, e.nombre as escuderia,  MAX(t.tiempo_vuelta) as mejor_tiempo_vuelta
 	FROM [Data_Center_Group].BI_FACT_Telemetria t
 	JOIN [Data_Center_Group].BI_DIM_Tiempo tiempo ON tiempo.id = t.tiempo_id
 	JOIN [Data_Center_Group].BI_DIM_Circuito c ON c.codigo = t.circuito_codigo
 	JOIN [Data_Center_Group].BI_DIM_Escuderia e ON e.nombre = t.escuderia_nombre
-	GROUP BY tiempo.anio, e.nombre, c.nombre, numero_vuelta
+	GROUP BY tiempo.anio, e.nombre, c.nombre, t.numero_vuelta
+
+GO
+CREATE VIEW [Data_Center_Group].BI_VIEW_MejorTiempoVuelta AS
+	SELECT t.anio as 'Año', t.circuito as Circuito, t.escuderia as Escuderia, MAX(t.mejor_tiempo_vuelta) as 'Mejor tiempo'
+	FROM [Data_Center_Group].BI_VIEW_AUX_MejorTiempoCadaVuelta t
+	GROUP BY t.anio, t.circuito, t.escuderia
+
+GO
 
 
 /*CREATE VIEW  Data_Center_Group.BI_view_mejor_tiempo_vuelta_cada_escuderia_x_circuito_x_anio AS
@@ -473,8 +481,4 @@ CREATE VIEW  Data_Center_Group.BI_view_promedio_incidentes_cada_escuderia_x_anio
 
 /*
 SELECT * FROM [Data_Center_Group].BI_VIEW_MejorTiempoVuelta;
-*/
-
-/*
-DROP [Data_Center_Group].BI_VIEW_MejorTiempoVuelta;
 */
