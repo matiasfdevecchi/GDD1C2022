@@ -495,5 +495,5 @@ CREATE VIEW  Data_Center_Group.BI_view_promedio_incidentes_cada_escuderia_x_anio
 
 /*
 SELECT * FROM [Data_Center_Group].BI_VIEW_MejorTiempoVuelta;
-SELECT * FROM [Data_Center_Group].BI_VIEW_Top3CircuitosConMasConsumo
+SELECT * FROM [Data_Center_Group].BI_VIEW_Top3CircuitosConMasConsumo;
 */
