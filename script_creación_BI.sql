@@ -31,6 +31,10 @@ IF OBJECT_ID('Data_Center_Group.BI_VIEW_AUX_MejorTiempoCadaVuelta', 'V') IS NOT 
     DROP VIEW [Data_Center_Group].BI_VIEW_AUX_MejorTiempoCadaVuelta;
 IF OBJECT_ID('Data_Center_Group.BI_VIEW_MejorTiempoVuelta', 'V') IS NOT NULL
     DROP VIEW [Data_Center_Group].BI_VIEW_MejorTiempoVuelta;
+IF OBJECT_ID('Data_Center_Group.BI_VIEW_AUX_ConsumoDeCombustible', 'V') IS NOT NULL
+    DROP VIEW [Data_Center_Group].BI_VIEW_AUX_ConsumoDeCombustible;
+IF OBJECT_ID('Data_Center_Group.BI_VIEW_Top3CircuitosConMasConsumo', 'V') IS NOT NULL
+    DROP VIEW [Data_Center_Group].BI_VIEW_Top3CircuitosConMasConsumo;
 /*IF OBJECT_ID('Data_Center_Group.BI_view_circuito_mayor_consumo_combustible_promedio', 'V') IS NOT NULL
     DROP VIEW Data_Center_Group.BI_view_circuito_mayor_consumo_combustible_promedio;
 IF OBJECT_ID('Data_Center_Group.BI_view_maxima_velocidad_x_auto', 'V') IS NOT NULL
@@ -119,7 +123,8 @@ CREATE TABLE [Data_Center_Group].BI_FACT_Telemetria(
 	freno_del_der_grosor_pastilla DECIMAL(18,2) NOT NULL,
 	freno_tra_izq_grosor_pastilla DECIMAL(18,2) NOT NULL,
 	freno_tra_der_grosor_pastilla DECIMAL(18,2) NOT NULL,
-	velocidad DECIMAL(18,2) NOT NULL
+	velocidad DECIMAL(18,2) NOT NULL,
+	combustible DECIMAL(18,2) NOT NULL
 );
 
 CREATE TABLE [Data_Center_Group].BI_FACT_Parada(
@@ -313,7 +318,8 @@ BEGIN
 		[Data_Center_Group].retornarGrosorPastillaDeTelemetriaFreno(t.codigo, 'Delantero Derecho'), 
 		[Data_Center_Group].retornarGrosorPastillaDeTelemetriaFreno(t.codigo, 'Trasero Izquierdo'), 
 		[Data_Center_Group].retornarGrosorPastillaDeTelemetriaFreno(t.codigo, 'Trasero Derecho'),
-		velocidad
+		ta.velocidad,
+		ta.combustible
 	FROM [Data_Center_Group].Telemetria t
 	JOIN [Data_Center_Group].TelemetriaAuto ta ON ta.telemetria_codigo = t.codigo
 	JOIN [Data_Center_Group].TelemetriaCaja tc ON tc.telemetria_codigo = t.codigo
@@ -446,14 +452,22 @@ CREATE VIEW [Data_Center_Group].BI_VIEW_MejorTiempoVuelta AS
 	FROM [Data_Center_Group].BI_VIEW_AUX_MejorTiempoCadaVuelta t
 	GROUP BY t.anio, t.circuito, t.escuderia
 
-GO
-
-
-/*CREATE VIEW  Data_Center_Group.BI_view_mejor_tiempo_vuelta_cada_escuderia_x_circuito_x_anio AS
 
 -- los 3 circuitos con mayor consumo de combustible promedio
+GO
+CREATE VIEW [Data_Center_Group].BI_VIEW_AUX_ConsumoDeCombustible AS
+	SELECT t.circuito_codigo, MAX(t.combustible) - MIN(t.combustible) as consumo_combustible
+	FROM [Data_Center_Group].BI_FACT_Telemetria t
+	GROUP BY t.circuito_codigo, t.auto_id, t.escuderia_nombre
 
-CREATE VIEW  Data_Center_Group.BI_view_circuito_mayor_consumo_combustible_promedio AS
+GO
+CREATE VIEW [Data_Center_Group].BI_VIEW_Top3CircuitosConMasConsumo AS
+	SELECT TOP 3 c.nombre as 'Circuito', AVG(t.consumo_combustible) as 'Consumo promedio'
+	FROM [Data_Center_Group].BI_VIEW_AUX_ConsumoDeCombustible t
+	JOIN [Data_Center_Group].BI_DIM_Circuito c ON c.codigo = t.circuito_codigo
+	GROUP BY c.nombre
+	ORDER BY 'Consumo promedio' DESC
+/*
 
 -- Maxima velocidad alcanzada por cada auto en cada tipo de sector de cada circuito
 
@@ -481,4 +495,5 @@ CREATE VIEW  Data_Center_Group.BI_view_promedio_incidentes_cada_escuderia_x_anio
 
 /*
 SELECT * FROM [Data_Center_Group].BI_VIEW_MejorTiempoVuelta;
+SELECT * FROM [Data_Center_Group].BI_VIEW_Top3CircuitosConMasConsumo
 */
