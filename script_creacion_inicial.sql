@@ -30,7 +30,6 @@ DROP TABLE [Data_Center_Group].TelemetriaNeumatico
 DROP TABLE [Data_Center_Group].TelemetriaMotor
 DROP TABLE [Data_Center_Group].TelemetriaAuto
 DROP TABLE [Data_Center_Group].TelemetriaCaja
-DROP TABLE [Data_Center_Group].TelemetriaVuelta
 DROP TABLE [Data_Center_Group].Telemetria
 DROP TABLE [Data_Center_Group].Carrera
 DROP TABLE [Data_Center_Group].Sector
@@ -125,14 +124,10 @@ CREATE TABLE [Data_Center_Group].Telemetria (
 	codigo DECIMAL(18,0) NOT NULL PRIMARY KEY,
 	sector_codigo INT NOT NULL FOREIGN KEY REFERENCES [Data_Center_Group].Sector(codigo),
 	carrera_codigo INT NOT NULL FOREIGN KEY REFERENCES [Data_Center_Group].Carrera(codigo),
-	carrera_distancia DECIMAL(18,6) NOT NULL
-) 
-
-CREATE TABLE [Data_Center_Group].TelemetriaVuelta (
-	telemetria_codigo DECIMAL(18,0) NOT NULL PRIMARY KEY FOREIGN KEY REFERENCES [Data_Center_Group].Telemetria(codigo),
-	numero DECIMAL(18,0) NOT NULL, 
-	distancia DECIMAL(18,2) NOT NULL, 
-	tiempo DECIMAL(18,10) NOT NULL, 
+	carrera_distancia DECIMAL(18,6) NOT NULL,
+	vuelta_numero DECIMAL(18,0) NOT NULL, 
+	vuelta_distancia DECIMAL(18,2) NOT NULL, 
+	vuelta_tiempo DECIMAL(18,10) NOT NULL, 
 );
 
 CREATE TABLE [Data_Center_Group].TelemetriaCaja (
@@ -337,18 +332,8 @@ GO
 CREATE PROCEDURE [Data_Center_Group].cargarTelemetrias
 AS
 BEGIN
-    INSERT INTO [Data_Center_Group].Telemetria(codigo, sector_codigo, carrera_codigo, carrera_distancia)
-	SELECT TELE_AUTO_CODIGO, CODIGO_SECTOR, CODIGO_CARRERA, TELE_AUTO_DISTANCIA_CARRERA
-	FROM gd_esquema.Maestra
-	WHERE TELE_AUTO_CODIGO IS NOT NULL
-END;
-
-GO
-CREATE PROCEDURE [Data_Center_Group].cargarTelemetriaVueltas
-AS
-BEGIN
-    INSERT INTO [Data_Center_Group].TelemetriaVuelta(telemetria_codigo, numero, distancia, tiempo)
-	SELECT TELE_AUTO_CODIGO, TELE_AUTO_NUMERO_VUELTA, TELE_AUTO_DISTANCIA_VUELTA, TELE_AUTO_TIEMPO_VUELTA
+    INSERT INTO [Data_Center_Group].Telemetria(codigo, sector_codigo, carrera_codigo, carrera_distancia, vuelta_numero, vuelta_distancia, vuelta_tiempo)
+	SELECT TELE_AUTO_CODIGO, CODIGO_SECTOR, CODIGO_CARRERA, TELE_AUTO_DISTANCIA_CARRERA, TELE_AUTO_NUMERO_VUELTA, TELE_AUTO_DISTANCIA_VUELTA, TELE_AUTO_TIEMPO_VUELTA
 	FROM gd_esquema.Maestra
 	WHERE TELE_AUTO_CODIGO IS NOT NULL
 END;
@@ -545,7 +530,6 @@ EXEC [Data_Center_Group].cargarCircuitos
 EXEC [Data_Center_Group].cargarCarreras
 EXEC [Data_Center_Group].cargarSectores
 EXEC [Data_Center_Group].cargarTelemetrias
-EXEC [Data_Center_Group].cargarTelemetriaVueltas
 EXEC [Data_Center_Group].cargarTelemetriaCajas
 EXEC [Data_Center_Group].cargarTelemetriaAutos
 EXEC [Data_Center_Group].cargarTelemetriaMotores
@@ -567,7 +551,6 @@ DROP PROCEDURE [Data_Center_Group].cargarCircuitos
 DROP PROCEDURE [Data_Center_Group].cargarCarreras
 DROP PROCEDURE [Data_Center_Group].cargarSectores
 DROP PROCEDURE [Data_Center_Group].cargarTelemetrias
-DROP PROCEDURE [Data_Center_Group].cargarTelemetriaVueltas
 DROP PROCEDURE [Data_Center_Group].cargarTelemetriaCajas
 DROP PROCEDURE [Data_Center_Group].cargarTelemetriaAutos
 DROP PROCEDURE [Data_Center_Group].cargarTelemetriaMotores
