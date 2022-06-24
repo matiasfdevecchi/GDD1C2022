@@ -57,19 +57,17 @@ CREATE TABLE [Data_Center_Group].BI_DIM_Auto (
 );
 
 CREATE TABLE [Data_Center_Group].BI_DIM_Escuderia (
-	id_escuderia INT NOT NULL IDENTITY PRIMARY KEY,
-	nombre NVARCHAR(255) NOT NULL,
+	nombre NVARCHAR(255) NOT NULL PRIMARY KEY,
 );
 
 CREATE TABLE [Data_Center_Group].BI_DIM_Circuito (
-	id INT NOT NULL IDENTITY PRIMARY KEY,
-	codigo INT NOT NULL,
+	codigo INT NOT NULL PRIMARY KEY,
 	nombre NVARCHAR(50),
 	pais NVARCHAR(50)
 );
 
 CREATE TABLE [Data_Center_Group].BI_DIM_Piloto (
-	codigo INT NOT NULL IDENTITY PRIMARY KEY,
+	codigo INT NOT NULL PRIMARY KEY,
 	nombre NVARCHAR(50) NOT NULL,
 	apellido NVARCHAR(50) NOT NULL,
 	nacionalidad NVARCHAR(50) NOT NULL,
@@ -90,7 +88,66 @@ CREATE TABLE [Data_Center_Group].BI_DIM_Incidente (
 	id INT NOT NULL IDENTITY PRIMARY KEY,
 	tipo NVARCHAR(255) NOT NULL,
 );
-GO
+
+-- Tabla de hechos
+CREATE TABLE [Data_Center_Group].BI_FACT_Telemetria(
+    id INT NOT NULL PRIMARY KEY, 
+	tiempo_id INTEGER FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Tiempo(id),
+	auto_id INTEGER FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Auto(id),
+	escuderia_nombre NVARCHAR(255) FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Escuderia(nombre),
+	piloto_codigo INT FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Piloto(codigo),
+	sector_id INT FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Sector(id),
+	circuito_codigo INT FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Circuito(codigo),
+	neumatico_del_izq_id INT FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Neumatico(id),
+	neumatico_del_der_id INT FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Neumatico(id),
+	neumatico_tra_izq_id INT FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Neumatico(id),
+	neumatico_tra_der_id INT FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Neumatico(id),
+	numero_vuelta DECIMAL(18,0) NOT NULL,
+	tiempo_vuelta DECIMAL(18,10) NOT NULL,
+	caja_desgaste DECIMAL(18,2) NOT NULL,
+	motor_desgaste DECIMAL(18,6) NOT NULL,
+	neumatico_del_izq_desgaste DECIMAL(18,6) NOT NULL,
+	neumatico_del_der_desgaste DECIMAL(18,6) NOT NULL,
+	neumatico_tra_izq_desgaste DECIMAL(18,6) NOT NULL,
+	neumatico_tra_der_desgaste DECIMAL(18,6) NOT NULL,
+	freno_del_izq_desgaste DECIMAL(18,2) NOT NULL,
+	freno_del_der_desgaste DECIMAL(18,2) NOT NULL,
+	freno_tra_izq_desgaste DECIMAL(18,2) NOT NULL,
+	freno_tra_der_desgaste DECIMAL(18,2) NOT NULL,
+	velocidad DECIMAL(18,2) NOT NULL
+);
+
+CREATE TABLE [Data_Center_Group].BI_FACT_Parada(
+    id INT NOT NULL PRIMARY KEY, 
+	tiempo_id INTEGER FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Tiempo(id),
+	auto_id INTEGER FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Auto(id),
+	escuderia_nombre NVARCHAR(255) FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Escuderia(nombre),
+	piloto_codigo INT FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Piloto(codigo),
+	circuito_codigo INT FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Circuito(codigo),
+	neumatico_del_izq_viejo_id INT FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Neumatico(id),
+	neumatico_del_izq_nuevo_id INT FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Neumatico(id),
+	neumatico_del_der_viejo_id INT FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Neumatico(id),
+	neumatico_del_der_nuevo_id INT FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Neumatico(id),
+	neumatico_tra_izq_viejo_id INT FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Neumatico(id),
+	neumatico_tra_izq_nuevo_id INT FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Neumatico(id),
+	neumatico_tra_der_viejo_id INT FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Neumatico(id),
+	neumatico_tra_der_nuevo_id INT FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Neumatico(id),
+	numero_vuelta DECIMAL(18,0) NOT NULL,
+	tiempo DECIMAL(18,2) NOT NULL
+);
+
+CREATE TABLE [Data_Center_Group].BI_FACT_Incidente(
+    id INT NOT NULL PRIMARY KEY, 
+	tiempo_id INTEGER FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Tiempo(id),
+	auto_id INTEGER FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Auto(id),
+	escuderia_nombre NVARCHAR(255) FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Escuderia(nombre),
+	piloto_codigo INT FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Piloto(codigo),
+	circuito_codigo INT FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Circuito(codigo),
+	sector_id INT FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Sector(id),
+	incidente_id INT FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Incidente(id),
+	numero_vuelta DECIMAL(18,0) NOT NULL,
+	tiempo DECIMAL(18,2) NOT NULL
+);
 
 --Carga de datos de tiempo (falta)
 GO
