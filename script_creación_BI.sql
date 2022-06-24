@@ -427,11 +427,21 @@ DROP FUNCTION [Data_Center_Group].retornarNeumaticoNuevoDeParada;
 
 --Desgaste promedio de cada componente de cada auto por vuelta por circuito
 
-CREATE VIEW  Data_Center_Group.BI_view_desgaste_promedio_cada_auto_x_vuelta_x_circuito AS
+CREATE VIEW  Data_Center_Group.BI_view_desgaste_promedio_cada_auto_x_vuelta_x_circuito AS*/
 
 --Mejor tiempo de vuelta de cada escuderia por circuito por año
 
-CREATE VIEW  Data_Center_Group.BI_view_mejor_tiempo_vuelta_cada_escuderia_x_circuito_x_anio AS
+GO
+CREATE VIEW [Data_Center_Group].BI_VIEW_MejorTiempoVuelta AS
+	SELECT tiempo.anio as 'Año', c.nombre as Circuito, numero_vuelta as Vuelta, e.nombre as Escuderia, MIN(t.tiempo_vuelta) as 'Mejor tiempo'
+	FROM [Data_Center_Group].BI_FACT_Telemetria t
+	JOIN [Data_Center_Group].BI_DIM_Tiempo tiempo ON tiempo.id = t.tiempo_id
+	JOIN [Data_Center_Group].BI_DIM_Circuito c ON c.codigo = t.circuito_codigo
+	JOIN [Data_Center_Group].BI_DIM_Escuderia e ON e.nombre = t.escuderia_nombre
+	GROUP BY tiempo.anio, e.nombre, c.nombre, numero_vuelta
+
+
+/*CREATE VIEW  Data_Center_Group.BI_view_mejor_tiempo_vuelta_cada_escuderia_x_circuito_x_anio AS
 
 -- los 3 circuitos con mayor consumo de combustible promedio
 
@@ -460,3 +470,11 @@ CREATE VIEW  Data_Center_Group.BI_view_3_circuitos_mayor peligro_x_anio AS
 --Promedio de incidentes que presenta cada escuderia por año en los distintos tipos de sectores 
 
 CREATE VIEW  Data_Center_Group.BI_view_promedio_incidentes_cada_escuderia_x_anio AS*/
+
+/*
+SELECT * FROM [Data_Center_Group].BI_VIEW_MejorTiempoVuelta;
+*/
+
+/*
+DROP [Data_Center_Group].BI_VIEW_MejorTiempoVuelta;
+*/
