@@ -27,6 +27,9 @@ IF OBJECT_ID('Data_Center_Group.BI_DIM_Neumatico', 'U') IS NOT NULL
 IF OBJECT_ID('Data_Center_Group.BI_DIM_IncidenteAuto', 'U') IS NOT NULL
     DROP TABLE [Data_Center_Group].BI_DIM_IncidenteAuto;
 	
+	
+IF OBJECT_ID('Data_Center_Group.BI_VIEW_DesgasteComponentes', 'V') IS NOT NULL
+    DROP VIEW [Data_Center_Group].BI_VIEW_DesgasteComponentes;
 IF OBJECT_ID('Data_Center_Group.BI_VIEW_AUX_MejorTiempoCadaVuelta', 'V') IS NOT NULL
     DROP VIEW [Data_Center_Group].BI_VIEW_AUX_MejorTiempoCadaVuelta;
 IF OBJECT_ID('Data_Center_Group.BI_VIEW_MejorTiempoVuelta', 'V') IS NOT NULL
@@ -434,6 +437,26 @@ DROP FUNCTION [Data_Center_Group].retornarNeumaticoNuevoDeParada;
 --Desgaste promedio de cada componente de cada auto por vuelta por circuito
 
 CREATE VIEW  Data_Center_Group.BI_view_desgaste_promedio_cada_auto_x_vuelta_x_circuito AS*/
+GO
+CREATE VIEW [Data_Center_Group].BI_VIEW_DesgasteComponentes AS
+	SELECT 
+		c.nombre as Circuito, 
+		t.escuderia_nombre as Escuderia, 
+		a.numero as 'Auto N°', t.numero_vuelta, 
+		AVG(t.caja_desgaste) as 'Caja - Desgaste',
+		MAX(t.motor_potencia) - MIN(T.motor_potencia) 'Motor - Desgaste',
+		MAX(t.neumatico_del_izq_profundidad) - MIN(T.neumatico_del_izq_profundidad) 'Neumatico Del. Izq. - Desgaste',
+		MAX(t.neumatico_del_der_profundidad) - MIN(T.neumatico_del_der_profundidad) 'Neumatico Del. Der. - Desgaste', 
+		MAX(t.neumatico_tra_izq_profundidad) - MIN(T.neumatico_tra_izq_profundidad) 'Neumatico Tras. Izq. - Desgaste',
+		MAX(t.neumatico_tra_der_profundidad) - MIN(T.neumatico_tra_der_profundidad) 'Neumatico Tras. Der. - Desgaste', 
+		MAX(t.freno_del_izq_grosor_pastilla) - MIN(T.freno_del_izq_grosor_pastilla) 'Freno Del. Izq. - Desgaste',
+		MAX(t.freno_del_der_grosor_pastilla) - MIN(T.freno_del_der_grosor_pastilla) 'Freno Del. Der. - Desgaste', 
+		MAX(t.freno_tra_izq_grosor_pastilla) - MIN(T.freno_tra_izq_grosor_pastilla) 'Freno Tras. Izq. - Desgaste',
+		MAX(t.freno_tra_der_grosor_pastilla) - MIN(T.freno_tra_der_grosor_pastilla) 'Freno Tras. Der. - Desgaste'
+	FROM [Data_Center_Group].BI_FACT_Telemetria t
+	JOIN [Data_Center_Group].BI_DIM_Circuito c ON c.codigo = t.circuito_codigo
+	JOIN [Data_Center_Group].BI_DIM_Auto a ON a.id = t.auto_id
+	GROUP BY c.nombre, t.escuderia_nombre, a.numero, t.numero_vuelta
 
 --Mejor tiempo de vuelta de cada escuderia por circuito por año
 
@@ -494,6 +517,7 @@ CREATE VIEW  Data_Center_Group.BI_view_3_circuitos_mayor peligro_x_anio AS
 CREATE VIEW  Data_Center_Group.BI_view_promedio_incidentes_cada_escuderia_x_anio AS*/
 
 /*
+SELECT * FROM [Data_Center_Group].BI_VIEW_DesgasteComponentes;
 SELECT * FROM [Data_Center_Group].BI_VIEW_MejorTiempoVuelta;
 SELECT * FROM [Data_Center_Group].BI_VIEW_Top3CircuitosConMasConsumo;
 */
