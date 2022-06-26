@@ -42,19 +42,15 @@ IF OBJECT_ID('Data_Center_Group.BI_VIEW_TiempoPromedioCadaEscuderiaEnParadasPorC
 	DROP VIEW [Data_Center_Group].BI_VIEW_TiempoPromedioCadaEscuderiaEnParadasPorCuatrimestre;
 IF OBJECT_ID('Data_Center_Group.BI_VIEW_CantidadParadasPorCircuitoPorEscuderiaPorAnio', 'V') IS NOT NULL 
 	DROP VIEW [Data_Center_Group].BI_VIEW_CantidadParadasPorCircuitoPorEscuderiaPorAnio;
+IF OBJECT_ID('Data_Center_Group.BI_VIEW_Top3CircutosConMayorCantidadDeTiempoEnParadasEnBoxes', 'V') IS NOT NULL 
+	DROP VIEW [Data_Center_Group].BI_VIEW_Top3CircutosConMayorCantidadDeTiempoEnParadasEnBoxes;
 /*
-IF OBJECT_ID('Data_Center_Group.BI_VIEW_TiempoPromedioCadaEscuderiaEnParadasPorCuatrimestre', 'V') IS NOT NULL 
-	DROP VIEW [Data_Center_Group].BI_VIEW_TiempoPromedioCadaEscuderiaEnParadasPorCuatrimestre;
 IF OBJECT_ID('Data_Center_Group.BI_view_circuito_mayor_consumo_combustible_promedio', 'V') IS NOT NULL
     DROP VIEW Data_Center_Group.BI_view_circuito_mayor_consumo_combustible_promedio;
 IF OBJECT_ID('Data_Center_Group.BI_view_maxima_velocidad_x_auto', 'V') IS NOT NULL
     DROP VIEW Data_Center_Group.BI_view_maxima_velocidad_x_auto;
 IF OBJECT_ID('Data_Center_Group.BI_view_tiempo_promedio_cada_escuderia_en_paradas_x_cuatrimestre', 'V') IS NOT NULL
     DROP VIEW Data_Center_Group.BI_view_tiempo_promedio_cada_escuderia_en_paradas_x_cuatrimestre;
-IF OBJECT_ID('Data_Center_Group.BI_view_cantidad_paradas_x_circuito_x_escuderia_x_anio', 'V') IS NOT NULL
-    DROP VIEW Data_Center_Group.BI_view_cantidad_paradas_x_circuito_x_escuderia_x_anio;
-IF OBJECT_ID('Data_Center_Group.BI_view_3_circutos_mayor_cantidad_tiempo_paradas_de_incidentes', 'V') IS NOT NULL
-    DROP VIEW Data_Center_Group.BI_view_3_circutos_mayor_cantidad_tiempo_paradas_de_incidentes;
 IF OBJECT_ID('Data_Center_Group.BI_view_3_circutos_mayor_peligro_x_anio', 'V') IS NOT NULL
     DROP VIEW Data_Center_Group.BI_view_3_circuitos_mayor_peligro_x_anio
 IF OBJECT_ID('Data_Center_Group.BI_view_promedio_incidentes_cada_escuderia_x_anio', 'V') IS NOT NULL
@@ -544,4 +540,7 @@ CREATE VIEW  Data_Center_Group.BI_view_promedio_incidentes_cada_escuderia_x_anio
 SELECT * FROM [Data_Center_Group].BI_VIEW_DesgasteComponentes;
 SELECT * FROM [Data_Center_Group].BI_VIEW_MejorTiempoVuelta;
 SELECT * FROM [Data_Center_Group].BI_VIEW_Top3CircuitosConMasConsumo;
+SELECT * FROM [Data_Center_Group].BI_VIEW_TiempoPromedioCadaEscuderiaEnParadasPorCuatrimestre
+SELECT * FROM [Data_Center_Group].BI_VIEW_CantidadParadasPorCircuitoPorEscuderiaPorAnio
+SELECT * FROM [Data_Center_Group].BI_VIEW_Top3CircutosConMayorCantidadDeTiempoEnParadasEnBoxes
 */
