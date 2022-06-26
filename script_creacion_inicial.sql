@@ -21,26 +21,46 @@ GO
 -------------------- DROPEO DE TABLAS --------------------
 ----------------------------------------------------------
 
-DROP TABLE [Data_Center_Group].IncidenteAuto
-DROP TABLE [Data_Center_Group].Incidente
-DROP TABLE [Data_Center_Group].ParadaCambioNeumatico
-DROP TABLE [Data_Center_Group].Parada
-DROP TABLE [Data_Center_Group].TelemetriaFreno
-DROP TABLE [Data_Center_Group].TelemetriaNeumatico
-DROP TABLE [Data_Center_Group].TelemetriaMotor
-DROP TABLE [Data_Center_Group].TelemetriaAuto
-DROP TABLE [Data_Center_Group].TelemetriaCaja
-DROP TABLE [Data_Center_Group].Telemetria
-DROP TABLE [Data_Center_Group].Carrera
-DROP TABLE [Data_Center_Group].Sector
-DROP TABLE [Data_Center_Group].Circuito
-DROP TABLE [Data_Center_Group].Auto
-DROP TABLE [Data_Center_Group].Escuderia
-DROP TABLE [Data_Center_Group].Piloto
-DROP TABLE [Data_Center_Group].Neumatico
-DROP TABLE [Data_Center_Group].Freno
-DROP TABLE [Data_Center_Group].Caja
-DROP TABLE [Data_Center_Group].Motor
+IF OBJECT_ID('Data_Center_Group.IncidenteAuto', 'U') IS NOT NULL
+	DROP TABLE [Data_Center_Group].IncidenteAuto
+IF OBJECT_ID('Data_Center_Group.Incidente', 'U') IS NOT NULL
+	DROP TABLE [Data_Center_Group].Incidente
+IF OBJECT_ID('Data_Center_Group.ParadaCambioNeumatico', 'U') IS NOT NULL
+	DROP TABLE [Data_Center_Group].ParadaCambioNeumatico
+IF OBJECT_ID('Data_Center_Group.Parada', 'U') IS NOT NULL
+	DROP TABLE [Data_Center_Group].Parada
+IF OBJECT_ID('Data_Center_Group.TelemetriaFreno', 'U') IS NOT NULL
+	DROP TABLE [Data_Center_Group].TelemetriaFreno
+IF OBJECT_ID('Data_Center_Group.TelemetriaNeumatico', 'U') IS NOT NULL
+	DROP TABLE [Data_Center_Group].TelemetriaNeumatico
+IF OBJECT_ID('Data_Center_Group.TelemetriaMotor', 'U') IS NOT NULL
+	DROP TABLE [Data_Center_Group].TelemetriaMotor
+IF OBJECT_ID('Data_Center_Group.TelemetriaAuto', 'U') IS NOT NULL
+	DROP TABLE [Data_Center_Group].TelemetriaAuto
+IF OBJECT_ID('Data_Center_Group.TelemetriaCaja', 'U') IS NOT NULL
+	DROP TABLE [Data_Center_Group].TelemetriaCaja
+IF OBJECT_ID('Data_Center_Group.Telemetria', 'U') IS NOT NULL
+	DROP TABLE [Data_Center_Group].Telemetria
+IF OBJECT_ID('Data_Center_Group.Carrera', 'U') IS NOT NULL
+	DROP TABLE [Data_Center_Group].Carrera
+IF OBJECT_ID('Data_Center_Group.Sector', 'U') IS NOT NULL
+	DROP TABLE [Data_Center_Group].Sector
+IF OBJECT_ID('Data_Center_Group.Circuito', 'U') IS NOT NULL
+	DROP TABLE [Data_Center_Group].Circuito
+IF OBJECT_ID('Data_Center_Group.Auto', 'U') IS NOT NULL
+	DROP TABLE [Data_Center_Group].Auto
+IF OBJECT_ID('Data_Center_Group.Escuderia', 'U') IS NOT NULL
+	DROP TABLE [Data_Center_Group].Escuderia
+IF OBJECT_ID('Data_Center_Group.Piloto', 'U') IS NOT NULL
+	DROP TABLE [Data_Center_Group].Piloto
+IF OBJECT_ID('Data_Center_Group.Neumatico', 'U') IS NOT NULL
+	DROP TABLE [Data_Center_Group].Neumatico
+IF OBJECT_ID('Data_Center_Group.Freno', 'U') IS NOT NULL
+	DROP TABLE [Data_Center_Group].Freno
+IF OBJECT_ID('Data_Center_Group.Caja', 'U') IS NOT NULL
+	DROP TABLE [Data_Center_Group].Caja
+IF OBJECT_ID('Data_Center_Group.Motor', 'U') IS NOT NULL
+	DROP TABLE [Data_Center_Group].Motor
 
 ----------------------------------------------------------
 ------------------ FIN DROPEO DE TABLAS ------------------

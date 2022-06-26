@@ -38,12 +38,23 @@ IF OBJECT_ID('Data_Center_Group.BI_VIEW_AUX_ConsumoDeCombustible', 'V') IS NOT N
     DROP VIEW [Data_Center_Group].BI_VIEW_AUX_ConsumoDeCombustible;
 IF OBJECT_ID('Data_Center_Group.BI_VIEW_Top3CircuitosConMasConsumo', 'V') IS NOT NULL
     DROP VIEW [Data_Center_Group].BI_VIEW_Top3CircuitosConMasConsumo;
+IF OBJECT_ID('Data_Center_Group.BI_VIEW_MaximaVelocidadPorAutoEnCadaSectorEnCadaCircuito', 'V') IS NOT NULL
+    DROP VIEW [Data_Center_Group].BI_VIEW_MaximaVelocidadPorAutoEnCadaSectorEnCadaCircuito;
 IF OBJECT_ID('Data_Center_Group.BI_VIEW_TiempoPromedioCadaEscuderiaEnParadasPorCuatrimestre', 'V') IS NOT NULL 
 	DROP VIEW [Data_Center_Group].BI_VIEW_TiempoPromedioCadaEscuderiaEnParadasPorCuatrimestre;
 IF OBJECT_ID('Data_Center_Group.BI_VIEW_CantidadParadasPorCircuitoPorEscuderiaPorAnio', 'V') IS NOT NULL 
 	DROP VIEW [Data_Center_Group].BI_VIEW_CantidadParadasPorCircuitoPorEscuderiaPorAnio;
 IF OBJECT_ID('Data_Center_Group.BI_VIEW_Top3CircutosConMayorCantidadDeTiempoEnParadasEnBoxes', 'V') IS NOT NULL 
 	DROP VIEW [Data_Center_Group].BI_VIEW_Top3CircutosConMayorCantidadDeTiempoEnParadasEnBoxes;
+IF OBJECT_ID('Data_Center_Group.BI_VIEW_AUX_IncidentesPorCircuitoPorAnio', 'V') IS NOT NULL 
+	DROP VIEW [Data_Center_Group].BI_VIEW_AUX_IncidentesPorCircuitoPorAnio;
+IF OBJECT_ID('Data_Center_Group.BI_VIEW_Top3CircuitosMasPeligrososPorAnio', 'V') IS NOT NULL 
+	DROP VIEW [Data_Center_Group].BI_VIEW_Top3CircuitosMasPeligrososPorAnio;
+IF OBJECT_ID('Data_Center_Group.BI_VIEW_AUX_CantidadIncidentesEscuderiaPorAnioEnSectores', 'V') IS NOT NULL 
+	DROP VIEW [Data_Center_Group].BI_VIEW_AUX_CantidadIncidentesEscuderiaPorAnioEnSectores;
+IF OBJECT_ID('Data_Center_Group.BI_VIEW_PromedioIncidentesEscuderiaPorAnioEnSectores', 'V') IS NOT NULL 
+	DROP VIEW [Data_Center_Group].BI_VIEW_PromedioIncidentesEscuderiaPorAnioEnSectores;
+
 /*
 IF OBJECT_ID('Data_Center_Group.BI_view_circuito_mayor_consumo_combustible_promedio', 'V') IS NOT NULL
     DROP VIEW Data_Center_Group.BI_view_circuito_mayor_consumo_combustible_promedio;
@@ -493,12 +504,23 @@ CREATE VIEW [Data_Center_Group].BI_VIEW_Top3CircuitosConMasConsumo AS
 	JOIN [Data_Center_Group].BI_DIM_Circuito c ON c.codigo = t.circuito_codigo
 	GROUP BY c.nombre
 	ORDER BY 'Consumo promedio' DESC
-/*
+
 
 -- Maxima velocidad alcanzada por cada auto en cada tipo de sector de cada circuito
-
-CREATE VIEW  Data_Center_Group.BI_view_maxima_velocidad_x_auto AS
-*/
+GO
+CREATE VIEW  Data_Center_Group.BI_VIEW_MaximaVelocidadPorAutoEnCadaSectorEnCadaCircuito AS
+		SELECT 
+			 e.nombre AS 'Escuderia',
+			 a.numero AS 'Auto N°', 
+			 c.nombre AS 'Circuito', 
+			 s.tipo AS 'Sector', 
+		 MAX(t.velocidad) AS 'Maxima velocidad' 
+		 FROM [Data_Center_Group].BI_FACT_Telemetria t
+		JOIN [Data_Center_Group].BI_DIM_Auto a ON t.auto_id = a.id
+		JOIN [Data_Center_Group].BI_DIM_Sector s ON t.sector_codigo = s.codigo
+		JOIN [Data_Center_Group].BI_DIM_Circuito c ON t.circuito_codigo = c.codigo
+		JOIN [Data_Center_Group].BI_DIM_Escuderia e ON t.escuderia_nombre= e.nombre
+		GROUP BY e.nombre, a.numero, c.nombre, s.tipo
 
 --Tiempo promedio que tardo cada escuderia en las paradas por cuatrimestre 
 GO
@@ -522,25 +544,58 @@ CREATE VIEW  Data_Center_Group.BI_VIEW_CantidadParadasPorCircuitoPorEscuderiaPor
 -- los 3 circuitos donde se consume mayor cantidad en tiempo de paradas en boxes
 GO
 CREATE VIEW  Data_Center_Group.BI_VIEW_Top3CircutosConMayorCantidadDeTiempoEnParadasEnBoxes AS
-	SELECT TOP 3 c.nombre as 'Circuito', p.tiempo as 'Tiempo en Boxes'
+	(SELECT TOP 3 c.nombre as 'Circuito', SUM(p.tiempo) as 'Tiempo en Boxes'
 	FROM [Data_Center_Group].BI_FACT_Parada p
 	JOIN [Data_Center_Group].BI_DIM_Circuito c ON c.codigo = p.circuito_codigo
-	GROUP BY c.nombre, p.tiempo
-	ORDER BY p.tiempo DESC 
-/*
--- los 3 circuitos mas peligrosos del año en funcion mayor cantidad de incidentes 
+	GROUP BY c.nombre
+	ORDER BY 'Tiempo en Boxes' DESC)
 
-CREATE VIEW  Data_Center_Group.BI_view_3_circuitos_mayor peligro_x_anio AS
+
+-- los 3 circuitos mas peligrosos del año en funcion mayor cantidad de incidentes 
+GO
+CREATE VIEW  Data_Center_Group.BI_VIEW_AUX_IncidentesPorCircuitoPorAnio AS
+	SELECT 
+		t.anio, 
+		ia.circuito_codigo, 
+		COUNT(ia.incidente_auto_tipo) AS cantidad_incidentes, 
+		ROW_NUMBER() OVER (PARTITION BY t.anio ORDER BY COUNT(ia.incidente_auto_tipo) DESC) ranking
+	FROM [Data_Center_Group].BI_FACT_IncidenteAuto ia
+	JOIN [Data_Center_Group].BI_DIM_Tiempo t ON t.id = ia.tiempo_id
+	GROUP BY t.anio, ia.circuito_codigo
+
+GO
+CREATE VIEW [Data_Center_Group].BI_VIEW_Top3CircuitosMasPeligrososPorAnio AS
+	SELECT ia.anio 'Año', c.nombre 'Circuito', ia.cantidad_incidentes as 'Cantidad incidentes'
+	FROM [Data_Center_Group].BI_VIEW_AUX_IncidentesPorCircuitoPorAnio ia
+	JOIN [Data_Center_Group].BI_DIM_Circuito c ON c.codigo = ia.circuito_codigo
+	WHERE ia.ranking <= 3
 
 --Promedio de incidentes que presenta cada escuderia por año en los distintos tipos de sectores 
+GO
+CREATE VIEW  [Data_Center_Group].BI_VIEW_AUX_CantidadIncidentesEscuderiaPorAnioEnSectores AS
+	SELECT
+		e.nombre AS escuderia, t.anio AS anio, s.tipo AS sector, COUNT(*) AS cantidad_incidentes
+	FROM [Data_Center_Group].BI_FACT_IncidenteAuto ia
+	JOIN [Data_Center_Group].BI_DIM_Escuderia e ON e.nombre = ia.escuderia_nombre
+	JOIN [Data_Center_Group].BI_DIM_Tiempo t ON t.id = ia.tiempo_id
+	JOIN [Data_Center_Group].BI_DIM_Sector s ON s.codigo = ia.sector_codigo
+	GROUP BY e.nombre, t.anio, s.tipo
 
-CREATE VIEW  Data_Center_Group.BI_view_promedio_incidentes_cada_escuderia_x_anio AS*/
+GO
+CREATE VIEW  [Data_Center_Group].BI_VIEW_PromedioIncidentesEscuderiaPorAnioEnSectores AS
+	SELECT
+		ia.anio AS 'Año', ia.sector AS 'Sector', AVG(ia.cantidad_incidentes) as 'Promedio incidentes'
+	FROM [Data_Center_Group].BI_VIEW_AUX_CantidadIncidentesEscuderiaPorAnioEnSectores ia
+	GROUP BY ia.anio, ia.sector
 
 /*
 SELECT * FROM [Data_Center_Group].BI_VIEW_DesgasteComponentes;
 SELECT * FROM [Data_Center_Group].BI_VIEW_MejorTiempoVuelta;
 SELECT * FROM [Data_Center_Group].BI_VIEW_Top3CircuitosConMasConsumo;
+SELECT * FROM [Data_Center_Group].BI_VIEW_MaximaVelocidadPorAutoEnCadaSectorEnCadaCircuito
 SELECT * FROM [Data_Center_Group].BI_VIEW_TiempoPromedioCadaEscuderiaEnParadasPorCuatrimestre
 SELECT * FROM [Data_Center_Group].BI_VIEW_CantidadParadasPorCircuitoPorEscuderiaPorAnio
 SELECT * FROM [Data_Center_Group].BI_VIEW_Top3CircutosConMayorCantidadDeTiempoEnParadasEnBoxes
+SELECT * FROM [Data_Center_Group].BI_VIEW_Top3CircuitosMasPeligrososPorAnio
+SELECT * FROM [Data_Center_Group].BI_VIEW_PromedioIncidentesEscuderiaPorAnioEnSectores
 */
