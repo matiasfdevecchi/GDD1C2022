@@ -21,6 +21,60 @@ GO
 -------------------- DROPEO DE TABLAS --------------------
 ----------------------------------------------------------
 
+-- BI
+IF OBJECT_ID('Data_Center_Group.BI_FACT_Telemetria', 'U') IS NOT NULL
+    DROP TABLE [Data_Center_Group].BI_FACT_Telemetria;
+IF OBJECT_ID('Data_Center_Group.BI_FACT_Parada', 'U') IS NOT NULL
+    DROP TABLE [Data_Center_Group].BI_FACT_Parada;
+IF OBJECT_ID('Data_Center_Group.BI_FACT_IncidenteAuto', 'U') IS NOT NULL
+    DROP TABLE [Data_Center_Group].BI_FACT_IncidenteAuto;
+IF OBJECT_ID('Data_Center_Group.BI_DIM_Tiempo', 'U') IS NOT NULL
+    DROP TABLE [Data_Center_Group].BI_DIM_Tiempo;
+IF OBJECT_ID('Data_Center_Group.BI_DIM_Auto', 'U') IS NOT NULL
+    DROP TABLE [Data_Center_Group].BI_DIM_Auto;
+IF OBJECT_ID('Data_Center_Group.BI_DIM_Escuderia', 'U') IS NOT NULL
+    DROP TABLE [Data_Center_Group].BI_DIM_Escuderia;
+IF OBJECT_ID('Data_Center_Group.BI_DIM_Circuito', 'U') IS NOT NULL
+    DROP TABLE [Data_Center_Group].BI_DIM_Circuito;
+IF OBJECT_ID('Data_Center_Group.BI_DIM_Piloto', 'U') IS NOT NULL
+    DROP TABLE [Data_Center_Group].BI_DIM_Piloto;
+IF OBJECT_ID('Data_Center_Group.BI_DIM_Sector', 'U') IS NOT NULL
+    DROP TABLE [Data_Center_Group].BI_DIM_Sector;
+IF OBJECT_ID('Data_Center_Group.BI_DIM_Neumatico', 'U') IS NOT NULL
+    DROP TABLE [Data_Center_Group].BI_DIM_Neumatico;
+IF OBJECT_ID('Data_Center_Group.BI_DIM_IncidenteAuto', 'U') IS NOT NULL
+    DROP TABLE [Data_Center_Group].BI_DIM_IncidenteAuto;
+	
+	
+IF OBJECT_ID('Data_Center_Group.BI_VIEW_DesgasteComponentes', 'V') IS NOT NULL
+    DROP VIEW [Data_Center_Group].BI_VIEW_DesgasteComponentes;
+IF OBJECT_ID('Data_Center_Group.BI_VIEW_AUX_MejorTiempoCadaVuelta', 'V') IS NOT NULL
+    DROP VIEW [Data_Center_Group].BI_VIEW_AUX_MejorTiempoCadaVuelta;
+IF OBJECT_ID('Data_Center_Group.BI_VIEW_MejorTiempoVuelta', 'V') IS NOT NULL
+    DROP VIEW [Data_Center_Group].BI_VIEW_MejorTiempoVuelta;
+IF OBJECT_ID('Data_Center_Group.BI_VIEW_AUX_ConsumoDeCombustible', 'V') IS NOT NULL
+    DROP VIEW [Data_Center_Group].BI_VIEW_AUX_ConsumoDeCombustible;
+IF OBJECT_ID('Data_Center_Group.BI_VIEW_Top3CircuitosConMasConsumo', 'V') IS NOT NULL
+    DROP VIEW [Data_Center_Group].BI_VIEW_Top3CircuitosConMasConsumo;
+IF OBJECT_ID('Data_Center_Group.BI_VIEW_MaximaVelocidadPorAutoEnCadaSectorEnCadaCircuito', 'V') IS NOT NULL
+    DROP VIEW [Data_Center_Group].BI_VIEW_MaximaVelocidadPorAutoEnCadaSectorEnCadaCircuito;
+IF OBJECT_ID('Data_Center_Group.BI_VIEW_TiempoPromedioCadaEscuderiaEnParadasPorCuatrimestre', 'V') IS NOT NULL 
+	DROP VIEW [Data_Center_Group].BI_VIEW_TiempoPromedioCadaEscuderiaEnParadasPorCuatrimestre;
+IF OBJECT_ID('Data_Center_Group.BI_VIEW_CantidadParadasPorCircuitoPorEscuderiaPorAnio', 'V') IS NOT NULL 
+	DROP VIEW [Data_Center_Group].BI_VIEW_CantidadParadasPorCircuitoPorEscuderiaPorAnio;
+IF OBJECT_ID('Data_Center_Group.BI_VIEW_Top3CircutosConMayorCantidadDeTiempoEnParadasEnBoxes', 'V') IS NOT NULL 
+	DROP VIEW [Data_Center_Group].BI_VIEW_Top3CircutosConMayorCantidadDeTiempoEnParadasEnBoxes;
+IF OBJECT_ID('Data_Center_Group.BI_VIEW_AUX_IncidentesPorCircuitoPorAnio', 'V') IS NOT NULL 
+	DROP VIEW [Data_Center_Group].BI_VIEW_AUX_IncidentesPorCircuitoPorAnio;
+IF OBJECT_ID('Data_Center_Group.BI_VIEW_Top3CircuitosMasPeligrososPorAnio', 'V') IS NOT NULL 
+	DROP VIEW [Data_Center_Group].BI_VIEW_Top3CircuitosMasPeligrososPorAnio;
+IF OBJECT_ID('Data_Center_Group.BI_VIEW_AUX_CantidadIncidentesEscuderiaPorAnioEnSectores', 'V') IS NOT NULL 
+	DROP VIEW [Data_Center_Group].BI_VIEW_AUX_CantidadIncidentesEscuderiaPorAnioEnSectores;
+IF OBJECT_ID('Data_Center_Group.BI_VIEW_PromedioIncidentesEscuderiaPorAnioEnSectores', 'V') IS NOT NULL 
+	DROP VIEW [Data_Center_Group].BI_VIEW_PromedioIncidentesEscuderiaPorAnioEnSectores;
+
+--OLTP
+
 IF OBJECT_ID('Data_Center_Group.IncidenteAuto', 'U') IS NOT NULL
 	DROP TABLE [Data_Center_Group].IncidenteAuto
 IF OBJECT_ID('Data_Center_Group.Incidente', 'U') IS NOT NULL
