@@ -34,6 +34,8 @@ IF OBJECT_ID('Data_Center_Group.BI_VIEW_AUX_MejorTiempoCadaVuelta', 'V') IS NOT 
     DROP VIEW [Data_Center_Group].BI_VIEW_AUX_MejorTiempoCadaVuelta;
 IF OBJECT_ID('Data_Center_Group.BI_VIEW_MejorTiempoVuelta', 'V') IS NOT NULL
     DROP VIEW [Data_Center_Group].BI_VIEW_MejorTiempoVuelta;
+IF OBJECT_ID('Data_Center_Group.BI_VIEW_AUX_ConsumoDeCombustible', 'V') IS NOT NULL
+    DROP VIEW [Data_Center_Group].BI_VIEW_AUX_ConsumoDeCombustible;
 IF OBJECT_ID('Data_Center_Group.BI_VIEW_Top3CircuitosConMasConsumo', 'V') IS NOT NULL
     DROP VIEW [Data_Center_Group].BI_VIEW_Top3CircuitosConMasConsumo;
 IF OBJECT_ID('Data_Center_Group.BI_VIEW_MaximaVelocidadPorAutoEnCadaSectorEnCadaCircuito', 'V') IS NOT NULL
@@ -143,7 +145,8 @@ CREATE TABLE [Data_Center_Group].BI_FACT_Telemetria(
 	freno_tra_der_grosor_pastilla_min DECIMAL(18,2) NOT NULL,
 	freno_tra_der_grosor_pastilla_max DECIMAL(18,2) NOT NULL,
 	velocidad_max DECIMAL(18,2) NOT NULL,
-	combustible DECIMAL(18,2) NOT NULL,
+	combustible_min DECIMAL(18,2) NOT NULL,
+	combustible_max DECIMAL(18,2) NOT NULL,
 	CONSTRAINT BI_FACT_Telemetria_pk PRIMARY KEY (tiempo_id, auto_id, escuderia_nombre, piloto_codigo, sector_codigo, circuito_codigo, numero_vuelta) 
 );
 
@@ -424,7 +427,8 @@ BEGIN
 			END
 		),
 		MAX(ta.velocidad),
-		AVG(ta.combustible)
+		MIN(ta.combustible),
+		MAX(ta.combustible)
 	FROM [Data_Center_Group].Telemetria t
 	JOIN [Data_Center_Group].TelemetriaAuto ta ON ta.telemetria_codigo = t.codigo
 	JOIN [Data_Center_Group].TelemetriaCaja tc ON tc.telemetria_codigo = t.codigo
@@ -591,11 +595,16 @@ CREATE VIEW [Data_Center_Group].BI_VIEW_MejorTiempoVuelta AS
 
 
 -- los 3 circuitos con mayor consumo de combustible promedio
+GO
+CREATE VIEW [Data_Center_Group].BI_VIEW_AUX_ConsumoDeCombustible AS
+	SELECT t.circuito_codigo, MAX(t.combustible_max) - MIN(t.combustible_min) as consumo_combustible
+	FROM [Data_Center_Group].BI_FACT_Telemetria t
+	GROUP BY t.circuito_codigo, t.auto_id, t.escuderia_nombre
 
 GO
 CREATE VIEW [Data_Center_Group].BI_VIEW_Top3CircuitosConMasConsumo AS
-	SELECT TOP 3 c.nombre as 'Circuito', AVG(t.combustible) as 'Consumo promedio'
-	FROM [Data_Center_Group].BI_FACT_Telemetria t
+	SELECT TOP 3 c.nombre as 'Circuito', AVG(t.consumo_combustible) as 'Consumo promedio'
+	FROM [Data_Center_Group].BI_VIEW_AUX_ConsumoDeCombustible t
 	JOIN [Data_Center_Group].BI_DIM_Circuito c ON c.codigo = t.circuito_codigo
 	GROUP BY c.nombre
 	ORDER BY 'Consumo promedio' DESC
