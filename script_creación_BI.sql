@@ -164,6 +164,7 @@ CREATE TABLE [Data_Center_Group].BI_FACT_IncidenteAuto(
 	escuderia_nombre NVARCHAR(255) FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Escuderia(nombre),
 	circuito_codigo INT FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Circuito(codigo),
 	sector_codigo INT FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Sector(codigo),
+	incidente_numero INT NOT NULL,
 	cantidad INT NOT NULL
 	CONSTRAINT BI_FACT_IncidenteAuto_pk PRIMARY KEY (tiempo_id, escuderia_nombre, circuito_codigo, sector_codigo) 
 );
@@ -454,13 +455,14 @@ BEGIN
 		a.escuderia_nombre, 
 		c.circuito_codigo, 
 		i.sector_codigo,
+		i.codigo,
 		COUNT(*)
 	FROM [Data_Center_Group].Incidente i
 	JOIN [Data_Center_Group].IncidenteAuto ia ON i.codigo = ia.incidente_codigo
 	JOIN [Data_Center_Group].Carrera c ON i.carrera_codigo = c.codigo
 	JOIN [Data_Center_Group].Auto a ON a.numero = ia.auto_numero AND a.escuderia_nombre = ia.auto_escuderia_nombre
 	JOIN [Data_Center_Group].BI_DIM_Tiempo tiempo ON tiempo.anio = YEAR(c.fecha) AND tiempo.cuatrimestre = [Data_Center_Group].retornarCuatrimestre(c.fecha)
-	GROUP BY tiempo.id, a.escuderia_nombre, c.circuito_codigo, i.sector_codigo
+	GROUP BY tiempo.id, a.escuderia_nombre, c.circuito_codigo, i.sector_codigo, i.codigo
 END;
 
 GO
@@ -606,8 +608,8 @@ CREATE VIEW  Data_Center_Group.BI_VIEW_AUX_IncidentesPorCircuitoPorAnio AS
 	SELECT 
 		t.anio as 'Año',
 		c.nombre as 'Escudería', 
-		SUM(ia.cantidad) AS 'Cantidad incidentes', 
-		ROW_NUMBER() OVER (PARTITION BY t.anio ORDER BY SUM(ia.cantidad) DESC) ranking
+		COUNT(DISTINCT ia.incidente_numero) AS 'Cantidad incidentes', 
+		ROW_NUMBER() OVER (PARTITION BY t.anio ORDER BY COUNT(DISTINCT ia.incidente_numero) DESC) ranking
 	FROM [Data_Center_Group].BI_FACT_IncidenteAuto ia
 	JOIN [Data_Center_Group].BI_DIM_Tiempo t ON t.id = ia.tiempo_id
 	JOIN [Data_Center_Group].BI_DIM_Circuito c ON c.codigo = ia.circuito_codigo
