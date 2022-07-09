@@ -50,8 +50,6 @@ IF OBJECT_ID('Data_Center_Group.BI_VIEW_AUX_IncidentesPorCircuitoPorAnio', 'V') 
 	DROP VIEW [Data_Center_Group].BI_VIEW_AUX_IncidentesPorCircuitoPorAnio;
 IF OBJECT_ID('Data_Center_Group.BI_VIEW_Top3CircuitosMasPeligrososPorAnio', 'V') IS NOT NULL 
 	DROP VIEW [Data_Center_Group].BI_VIEW_Top3CircuitosMasPeligrososPorAnio;
-IF OBJECT_ID('Data_Center_Group.BI_VIEW_AUX_CantidadIncidentesEscuderiaPorAnioEnSectores', 'V') IS NOT NULL 
-	DROP VIEW [Data_Center_Group].BI_VIEW_AUX_CantidadIncidentesEscuderiaPorAnioEnSectores;
 IF OBJECT_ID('Data_Center_Group.BI_VIEW_PromedioIncidentesEscuderiaPorAnioEnSectores', 'V') IS NOT NULL 
 	DROP VIEW [Data_Center_Group].BI_VIEW_PromedioIncidentesEscuderiaPorAnioEnSectores;
 
@@ -150,27 +148,24 @@ CREATE TABLE [Data_Center_Group].BI_FACT_Telemetria(
 	CONSTRAINT BI_FACT_Telemetria_pk PRIMARY KEY (tiempo_id, auto_id, escuderia_nombre, piloto_codigo, sector_codigo, circuito_codigo, numero_vuelta) 
 );
 
-CREATE TABLE [Data_Center_Group].BI_FACT_Parada(
-    id INT NOT NULL IDENTITY PRIMARY KEY, 
+CREATE TABLE [Data_Center_Group].BI_FACT_Parada( 
 	tiempo_id INTEGER FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Tiempo(id),
 	auto_id INTEGER FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Auto(id),
 	escuderia_nombre NVARCHAR(255) FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Escuderia(nombre),
 	piloto_codigo INT FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Piloto(codigo),
 	circuito_codigo INT FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Circuito(codigo),
 	numero_vuelta DECIMAL(18,0) NOT NULL,
-	tiempo DECIMAL(18,2) NOT NULL
+	tiempo DECIMAL(18,2) NOT NULL,
+	CONSTRAINT BI_FACT_Parada_pk PRIMARY KEY (tiempo_id, auto_id, escuderia_nombre, piloto_codigo, circuito_codigo, numero_vuelta) 
 );
 
 CREATE TABLE [Data_Center_Group].BI_FACT_IncidenteAuto(
-    id INT NOT NULL IDENTITY PRIMARY KEY, 
 	tiempo_id INTEGER FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Tiempo(id),
-	auto_id INTEGER FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Auto(id),
 	escuderia_nombre NVARCHAR(255) FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Escuderia(nombre),
-	piloto_codigo INT FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Piloto(codigo),
 	circuito_codigo INT FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Circuito(codigo),
 	sector_codigo INT FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Sector(codigo),
-	incidente_auto_tipo NVARCHAR(255) FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_IncidenteAuto(tipo),
-	numero_vuelta DECIMAL(18,0) NOT NULL
+	cantidad INT NOT NULL
+	CONSTRAINT BI_FACT_IncidenteAuto_pk PRIMARY KEY (tiempo_id, escuderia_nombre, circuito_codigo, sector_codigo) 
 );
 
 --Carga de datos de tiempo (falta)
@@ -456,19 +451,16 @@ BEGIN
 	INSERT INTO [Data_Center_Group].BI_FACT_IncidenteAuto
 	SELECT 
 		tiempo.id, 
-		dim_auto.id, 
 		a.escuderia_nombre, 
-		a.piloto_codigo, 
 		c.circuito_codigo, 
 		i.sector_codigo,
-		ia.tipo,
-		ia.numero_vuelta
+		COUNT(*)
 	FROM [Data_Center_Group].Incidente i
 	JOIN [Data_Center_Group].IncidenteAuto ia ON i.codigo = ia.incidente_codigo
 	JOIN [Data_Center_Group].Carrera c ON i.carrera_codigo = c.codigo
 	JOIN [Data_Center_Group].Auto a ON a.numero = ia.auto_numero AND a.escuderia_nombre = ia.auto_escuderia_nombre
 	JOIN [Data_Center_Group].BI_DIM_Tiempo tiempo ON tiempo.anio = YEAR(c.fecha) AND tiempo.cuatrimestre = [Data_Center_Group].retornarCuatrimestre(c.fecha)
-	JOIN [Data_Center_Group].BI_DIM_Auto dim_auto ON dim_auto.numero = a.numero AND dim_auto.modelo = a.modelo
+	GROUP BY tiempo.id, a.escuderia_nombre, c.circuito_codigo, i.sector_codigo
 END;
 
 GO
@@ -612,38 +604,30 @@ CREATE VIEW  Data_Center_Group.BI_VIEW_Top3CircutosConMayorCantidadDeTiempoEnPar
 GO
 CREATE VIEW  Data_Center_Group.BI_VIEW_AUX_IncidentesPorCircuitoPorAnio AS
 	SELECT 
-		t.anio, 
-		ia.circuito_codigo, 
-		COUNT(ia.incidente_auto_tipo) AS cantidad_incidentes, 
-		ROW_NUMBER() OVER (PARTITION BY t.anio ORDER BY COUNT(ia.incidente_auto_tipo) DESC) ranking
+		t.anio as 'Año',
+		c.nombre as 'Escudería', 
+		SUM(ia.cantidad) AS 'Cantidad incidentes', 
+		ROW_NUMBER() OVER (PARTITION BY t.anio ORDER BY SUM(ia.cantidad) DESC) ranking
 	FROM [Data_Center_Group].BI_FACT_IncidenteAuto ia
 	JOIN [Data_Center_Group].BI_DIM_Tiempo t ON t.id = ia.tiempo_id
-	GROUP BY t.anio, ia.circuito_codigo
+	JOIN [Data_Center_Group].BI_DIM_Circuito c ON c.codigo = ia.circuito_codigo
+	GROUP BY t.anio, c.nombre
 
 GO
 CREATE VIEW [Data_Center_Group].BI_VIEW_Top3CircuitosMasPeligrososPorAnio AS
-	SELECT ia.anio 'Año', c.nombre 'Circuito', ia.cantidad_incidentes as 'Cantidad incidentes'
+	SELECT *
 	FROM [Data_Center_Group].BI_VIEW_AUX_IncidentesPorCircuitoPorAnio ia
-	JOIN [Data_Center_Group].BI_DIM_Circuito c ON c.codigo = ia.circuito_codigo
 	WHERE ia.ranking <= 3
 
 --Promedio de incidentes que presenta cada escuderia por año en los distintos tipos de sectores 
 GO
-CREATE VIEW  [Data_Center_Group].BI_VIEW_AUX_CantidadIncidentesEscuderiaPorAnioEnSectores AS
-	SELECT
-		e.nombre AS escuderia, t.anio AS anio, s.tipo AS sector, COUNT(*) AS cantidad_incidentes
-	FROM [Data_Center_Group].BI_FACT_IncidenteAuto ia
-	JOIN [Data_Center_Group].BI_DIM_Escuderia e ON e.nombre = ia.escuderia_nombre
-	JOIN [Data_Center_Group].BI_DIM_Tiempo t ON t.id = ia.tiempo_id
-	JOIN [Data_Center_Group].BI_DIM_Sector s ON s.codigo = ia.sector_codigo
-	GROUP BY e.nombre, t.anio, s.tipo
-
-GO
 CREATE VIEW  [Data_Center_Group].BI_VIEW_PromedioIncidentesEscuderiaPorAnioEnSectores AS
 	SELECT
-		ia.anio AS 'Año', ia.sector AS 'Sector', AVG(ia.cantidad_incidentes) as 'Promedio incidentes'
-	FROM [Data_Center_Group].BI_VIEW_AUX_CantidadIncidentesEscuderiaPorAnioEnSectores ia
-	GROUP BY ia.anio, ia.sector
+		t.anio AS 'Año', ia.escuderia_nombre AS 'Escudería', s.tipo AS 'Sector tipo', SUM(ia.cantidad) as 'Promedio incidentes'
+	FROM [Data_Center_Group].BI_FACT_IncidenteAuto ia
+	JOIN [Data_Center_Group].BI_DIM_Tiempo t ON t.id = ia.tiempo_id
+	JOIN [Data_Center_Group].BI_DIM_Sector s ON s.codigo = ia.sector_codigo
+	GROUP BY t.anio, ia.escuderia_nombre, s.tipo
 
 /*
 SELECT * FROM [Data_Center_Group].BI_VIEW_DesgasteComponentes;
