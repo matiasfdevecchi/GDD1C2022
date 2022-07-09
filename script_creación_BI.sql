@@ -157,14 +157,6 @@ CREATE TABLE [Data_Center_Group].BI_FACT_Parada(
 	escuderia_nombre NVARCHAR(255) FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Escuderia(nombre),
 	piloto_codigo INT FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Piloto(codigo),
 	circuito_codigo INT FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Circuito(codigo),
-	neumatico_del_izq_viejo_numero_serie NVARCHAR(255) FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Neumatico(numero_serie),
-	neumatico_del_izq_nuevo_numero_serie NVARCHAR(255) FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Neumatico(numero_serie),
-	neumatico_del_der_viejo_numero_serie NVARCHAR(255) FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Neumatico(numero_serie),
-	neumatico_del_der_nuevo_numero_serie NVARCHAR(255) FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Neumatico(numero_serie),
-	neumatico_tra_izq_viejo_numero_serie NVARCHAR(255) FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Neumatico(numero_serie),
-	neumatico_tra_izq_nuevo_numero_serie NVARCHAR(255) FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Neumatico(numero_serie),
-	neumatico_tra_der_viejo_numero_serie NVARCHAR(255) FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Neumatico(numero_serie),
-	neumatico_tra_der_nuevo_numero_serie NVARCHAR(255) FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Neumatico(numero_serie),
 	numero_vuelta DECIMAL(18,0) NOT NULL,
 	tiempo DECIMAL(18,2) NOT NULL
 );
@@ -264,23 +256,10 @@ END;
 
 --Carga de datos de telemetria
 GO
-CREATE FUNCTION [Data_Center_Group].retornarTiempo(@fecha DATE)
+CREATE FUNCTION [Data_Center_Group].retornarCuatrimestre(@fecha DATE)
 RETURNS INT
 BEGIN
-	RETURN (
-    SELECT id FROM [Data_Center_Group].BI_DIM_Tiempo t
-    WHERE t.anio = YEAR(@fecha) AND t.cuatrimestre = MONTH(@fecha) / 4 + 1
-    )
-END;
-
-GO
-CREATE FUNCTION [Data_Center_Group].retornarAuto(@numero INT, @modelo NVARCHAR(255))
-RETURNS INT
-BEGIN
-	RETURN (
-    SELECT id FROM [Data_Center_Group].BI_DIM_Auto a
-    WHERE a.modelo = @modelo AND a.numero = @numero
-    )
+	RETURN MONTH(@fecha) / 4 + 1
 END;
 
 GO
@@ -319,8 +298,8 @@ AS
 BEGIN
 	INSERT INTO [Data_Center_Group].BI_FACT_Telemetria
 	SELECT 
-		[Data_Center_Group].retornarTiempo(c.fecha), 
-		[Data_Center_Group].retornarAuto(a.numero, a.modelo), 
+		tiempo.id, 
+		dim_auto.id, 
 		a.escuderia_nombre, 
 		a.piloto_codigo, 
 		t.sector_codigo, 
@@ -437,36 +416,16 @@ BEGIN
 	JOIN [Data_Center_Group].TelemetriaFreno tf ON tf.telemetria_codigo = t.codigo
 	JOIN [Data_Center_Group].Carrera c ON c.codigo = t.carrera_codigo
 	JOIN [Data_Center_Group].Auto a ON a.numero = ta.auto_numero AND a.escuderia_nombre = ta.auto_escuderia_nombre
+	JOIN [Data_Center_Group].BI_DIM_Tiempo tiempo ON tiempo.anio = YEAR(c.fecha) AND tiempo.cuatrimestre = [Data_Center_Group].retornarCuatrimestre(c.fecha)
+	JOIN [Data_Center_Group].BI_DIM_Auto dim_auto ON dim_auto.numero = a.numero AND dim_auto.modelo = a.modelo
 	GROUP BY 
-		[Data_Center_Group].retornarTiempo(c.fecha), 
-		[Data_Center_Group].retornarAuto(a.numero, a.modelo), 
+		tiempo.id, 
+		dim_auto.id, 
 		a.escuderia_nombre, 
 		a.piloto_codigo, 
 		t.sector_codigo, 
 		c.circuito_codigo, 
 		t.vuelta_numero
-END;
-
-
-
-GO
-CREATE FUNCTION [Data_Center_Group].retornarNeumaticoViejoDeParada(@parada_codigo DECIMAL(18,0), @posicion NVARCHAR(255))
-RETURNS NVARCHAR(255)
-BEGIN
-	RETURN (
-    SELECT p.neumatico_viejo_numero_serie FROM [Data_Center_Group].ParadaCambioNeumatico p
-    WHERE p.parada_codigo = @parada_codigo AND p.posicion = @posicion
-    )
-END;
-
-GO
-CREATE FUNCTION [Data_Center_Group].retornarNeumaticoNuevoDeParada(@parada_codigo DECIMAL(18,0), @posicion NVARCHAR(255))
-RETURNS NVARCHAR(255)
-BEGIN
-	RETURN (
-    SELECT p.neumatico_viejo_numero_serie FROM [Data_Center_Group].ParadaCambioNeumatico p
-    WHERE p.parada_codigo = @parada_codigo AND p.posicion = @posicion
-    )
 END;
 
 GO
@@ -475,24 +434,19 @@ AS
 BEGIN
 	INSERT INTO [Data_Center_Group].BI_FACT_Parada
 	SELECT 
-		[Data_Center_Group].retornarTiempo(c.fecha), 
-		[Data_Center_Group].retornarAuto(a.numero, a.modelo), 
+		tiempo.id, 
+		dim_auto.id,
 		a.escuderia_nombre, 
 		a.piloto_codigo, 
 		c.circuito_codigo, 
-		[Data_Center_Group].retornarNeumaticoViejoDeParada(p.codigo, 'Delantero Izquierdo'), 
-		[Data_Center_Group].retornarNeumaticoNuevoDeParada(p.codigo, 'Delantero Izquierdo'), 
-		[Data_Center_Group].retornarNeumaticoViejoDeParada(p.codigo, 'Delantero Derecho'), 
-		[Data_Center_Group].retornarNeumaticoNuevoDeParada(p.codigo, 'Delantero Derecho'), 
-		[Data_Center_Group].retornarNeumaticoViejoDeParada(p.codigo, 'Trasero Izquierdo'), 
-		[Data_Center_Group].retornarNeumaticoNuevoDeParada(p.codigo, 'Trasero Izquierdo'), 
-		[Data_Center_Group].retornarNeumaticoViejoDeParada(p.codigo, 'Trasero Derecho'),
-		[Data_Center_Group].retornarNeumaticoNuevoDeParada(p.codigo, 'Trasero Derecho'),
 		p.numero_vuelta,
 		p.tiempo
 	FROM [Data_Center_Group].Parada p
 	JOIN [Data_Center_Group].Carrera c ON p.carrera_codigo = c.codigo
 	JOIN [Data_Center_Group].Auto a ON a.numero = p.auto_numero AND a.escuderia_nombre = p.auto_escuderia_nombre
+	JOIN [Data_Center_Group].BI_DIM_Tiempo tiempo ON tiempo.anio = YEAR(c.fecha) AND tiempo.cuatrimestre = [Data_Center_Group].retornarCuatrimestre(c.fecha)
+	JOIN [Data_Center_Group].BI_DIM_Auto dim_auto ON dim_auto.numero = a.numero AND dim_auto.modelo = a.modelo
+	GROUP BY tiempo.id, dim_auto.id, a.escuderia_nombre, a.piloto_codigo, c.circuito_codigo, p.numero_vuelta, p.tiempo
 END;
 
 GO
@@ -501,8 +455,8 @@ AS
 BEGIN
 	INSERT INTO [Data_Center_Group].BI_FACT_IncidenteAuto
 	SELECT 
-		[Data_Center_Group].retornarTiempo(c.fecha), 
-		[Data_Center_Group].retornarAuto(a.numero, a.modelo), 
+		tiempo.id, 
+		dim_auto.id, 
 		a.escuderia_nombre, 
 		a.piloto_codigo, 
 		c.circuito_codigo, 
@@ -513,6 +467,8 @@ BEGIN
 	JOIN [Data_Center_Group].IncidenteAuto ia ON i.codigo = ia.incidente_codigo
 	JOIN [Data_Center_Group].Carrera c ON i.carrera_codigo = c.codigo
 	JOIN [Data_Center_Group].Auto a ON a.numero = ia.auto_numero AND a.escuderia_nombre = ia.auto_escuderia_nombre
+	JOIN [Data_Center_Group].BI_DIM_Tiempo tiempo ON tiempo.anio = YEAR(c.fecha) AND tiempo.cuatrimestre = [Data_Center_Group].retornarCuatrimestre(c.fecha)
+	JOIN [Data_Center_Group].BI_DIM_Auto dim_auto ON dim_auto.numero = a.numero AND dim_auto.modelo = a.modelo
 END;
 
 GO
@@ -540,13 +496,10 @@ DROP PROCEDURE [Data_Center_Group].cargarFACTTelemetrias;
 DROP PROCEDURE [Data_Center_Group].cargarFACTParadas;
 DROP PROCEDURE [Data_Center_Group].cargarFACTIncidenteAutos;
 
-DROP FUNCTION [Data_Center_Group].retornarTiempo;
-DROP FUNCTION [Data_Center_Group].retornarAuto;
+DROP FUNCTION [Data_Center_Group].retornarCuatrimestre;
 DROP FUNCTION [Data_Center_Group].retornarNeumaticoDeTelemetria;
 DROP FUNCTION [Data_Center_Group].retornarProfundidadDeTelemetriaNeumatico;
 DROP FUNCTION [Data_Center_Group].retornarGrosorPastillaDeTelemetriaFreno;
-DROP FUNCTION [Data_Center_Group].retornarNeumaticoViejoDeParada;
-DROP FUNCTION [Data_Center_Group].retornarNeumaticoNuevoDeParada;
 
 --Vistas --
 
