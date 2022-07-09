@@ -440,13 +440,13 @@ BEGIN
 		a.piloto_codigo, 
 		c.circuito_codigo, 
 		p.numero_vuelta,
-		p.tiempo
+		AVG(p.tiempo)
 	FROM [Data_Center_Group].Parada p
 	JOIN [Data_Center_Group].Carrera c ON p.carrera_codigo = c.codigo
 	JOIN [Data_Center_Group].Auto a ON a.numero = p.auto_numero AND a.escuderia_nombre = p.auto_escuderia_nombre
 	JOIN [Data_Center_Group].BI_DIM_Tiempo tiempo ON tiempo.anio = YEAR(c.fecha) AND tiempo.cuatrimestre = [Data_Center_Group].retornarCuatrimestre(c.fecha)
 	JOIN [Data_Center_Group].BI_DIM_Auto dim_auto ON dim_auto.numero = a.numero AND dim_auto.modelo = a.modelo
-	GROUP BY tiempo.id, dim_auto.id, a.escuderia_nombre, a.piloto_codigo, c.circuito_codigo, p.numero_vuelta, p.tiempo
+	GROUP BY tiempo.id, dim_auto.id, a.escuderia_nombre, a.piloto_codigo, c.circuito_codigo, p.numero_vuelta
 END;
 
 GO
@@ -582,7 +582,7 @@ CREATE VIEW  Data_Center_Group.BI_VIEW_MaximaVelocidadPorAutoEnCadaSectorEnCadaC
 --Tiempo promedio que tardo cada escuderia en las paradas por cuatrimestre 
 GO
 CREATE VIEW  Data_Center_Group.BI_VIEW_TiempoPromedioCadaEscuderiaEnParadasPorCuatrimestre AS
-	SELECT AVG(p.tiempo) as 'Tiempo Promedio' , p.escuderia_nombre as 'Nombre Escuderia', t.cuatrimestre as 'Cuatrimestre'
+	SELECT p.escuderia_nombre as 'Nombre Escuderia', t.cuatrimestre as 'Cuatrimestre', AVG(p.tiempo) as 'Tiempo Promedio' 
 	FROM [Data_Center_Group].BI_FACT_Parada p
 	JOIN [Data_Center_Group].BI_DIM_Tiempo t ON t.id = p.tiempo_id
 	JOIN [Data_Center_Group].BI_DIM_Escuderia e ON e.nombre = p.escuderia_nombre
@@ -591,7 +591,7 @@ CREATE VIEW  Data_Center_Group.BI_VIEW_TiempoPromedioCadaEscuderiaEnParadasPorCu
 -- Cantidad de paradas por circuito por escuderia por anio
 GO
 CREATE VIEW  Data_Center_Group.BI_VIEW_CantidadParadasPorCircuitoPorEscuderiaPorAnio AS
-	SELECT COUNT(*) as 'Cantidad de Paradas', c.nombre as 'Circuito', p.escuderia_nombre as 'Nombre Escuderia', t.anio as 'Año'
+	SELECT c.nombre as 'Circuito', p.escuderia_nombre as 'Nombre Escuderia', t.anio as 'Año', COUNT(*) as 'Cantidad de Paradas'
 	FROM [Data_Center_Group].BI_FACT_Parada p
 	JOIN [Data_Center_Group].BI_DIM_Tiempo t ON t.id = p.tiempo_id
 	JOIN [Data_Center_Group].BI_DIM_Circuito c ON c.codigo = p.circuito_codigo
