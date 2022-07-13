@@ -30,8 +30,6 @@ IF OBJECT_ID('Data_Center_Group.BI_DIM_IncidenteAuto', 'U') IS NOT NULL
 	
 IF OBJECT_ID('Data_Center_Group.BI_VIEW_DesgasteComponentes', 'V') IS NOT NULL
     DROP VIEW [Data_Center_Group].BI_VIEW_DesgasteComponentes;
-IF OBJECT_ID('Data_Center_Group.BI_VIEW_AUX_MejorTiempoCadaVuelta', 'V') IS NOT NULL
-    DROP VIEW [Data_Center_Group].BI_VIEW_AUX_MejorTiempoCadaVuelta;
 IF OBJECT_ID('Data_Center_Group.BI_VIEW_MejorTiempoVuelta', 'V') IS NOT NULL
     DROP VIEW [Data_Center_Group].BI_VIEW_MejorTiempoVuelta;
 IF OBJECT_ID('Data_Center_Group.BI_VIEW_AUX_ConsumoDeCombustible', 'V') IS NOT NULL
@@ -52,18 +50,6 @@ IF OBJECT_ID('Data_Center_Group.BI_VIEW_Top3CircuitosMasPeligrososPorAnio', 'V')
 	DROP VIEW [Data_Center_Group].BI_VIEW_Top3CircuitosMasPeligrososPorAnio;
 IF OBJECT_ID('Data_Center_Group.BI_VIEW_PromedioIncidentesEscuderiaPorAnioEnSectores', 'V') IS NOT NULL 
 	DROP VIEW [Data_Center_Group].BI_VIEW_PromedioIncidentesEscuderiaPorAnioEnSectores;
-
-/*
-IF OBJECT_ID('Data_Center_Group.BI_view_circuito_mayor_consumo_combustible_promedio', 'V') IS NOT NULL
-    DROP VIEW Data_Center_Group.BI_view_circuito_mayor_consumo_combustible_promedio;
-IF OBJECT_ID('Data_Center_Group.BI_view_maxima_velocidad_x_auto', 'V') IS NOT NULL
-    DROP VIEW Data_Center_Group.BI_view_maxima_velocidad_x_auto;
-IF OBJECT_ID('Data_Center_Group.BI_view_tiempo_promedio_cada_escuderia_en_paradas_x_cuatrimestre', 'V') IS NOT NULL
-    DROP VIEW Data_Center_Group.BI_view_tiempo_promedio_cada_escuderia_en_paradas_x_cuatrimestre;
-IF OBJECT_ID('Data_Center_Group.BI_view_3_circutos_mayor_peligro_x_anio', 'V') IS NOT NULL
-    DROP VIEW Data_Center_Group.BI_view_3_circuitos_mayor_peligro_x_anio
-IF OBJECT_ID('Data_Center_Group.BI_view_promedio_incidentes_cada_escuderia_x_anio', 'V') IS NOT NULL
-    DROP VIEW Data_Center_Group.BI_view_promedio_incidentes_cada_escuderia_x_anio*/
 	
 
 
@@ -123,25 +109,26 @@ CREATE TABLE [Data_Center_Group].BI_FACT_Telemetria(
 	circuito_codigo INT FOREIGN KEY REFERENCES [Data_Center_Group].BI_DIM_Circuito(codigo),
 	numero_vuelta DECIMAL(18,0) NOT NULL,
 	tiempo_vuelta DECIMAL(18,10) NOT NULL,
-	caja_desgaste DECIMAL(18,2) NOT NULL,
+	caja_desgaste_promedio DECIMAL(18,2) NOT NULL,
+	caja_desgaste_cantidad INT NOT NULL,
 	motor_potencia_min DECIMAL(18,6) NOT NULL,
 	motor_potencia_max DECIMAL(18,6) NOT NULL,
-	neumatico_del_izq_profundidad_min DECIMAL(18,6) NOT NULL,
-	neumatico_del_izq_profundidad_max DECIMAL(18,6) NOT NULL,
-	neumatico_del_der_profundidad_min DECIMAL(18,6) NOT NULL,
-	neumatico_del_der_profundidad_max DECIMAL(18,6) NOT NULL,
-	neumatico_tra_izq_profundidad_min DECIMAL(18,6) NOT NULL,
-	neumatico_tra_izq_profundidad_max DECIMAL(18,6) NOT NULL,
-	neumatico_tra_der_profundidad_min DECIMAL(18,6) NOT NULL,
-	neumatico_tra_der_profundidad_max DECIMAL(18,6) NOT NULL,
-	freno_del_izq_grosor_pastilla_min DECIMAL(18,2) NOT NULL,
-	freno_del_izq_grosor_pastilla_max DECIMAL(18,2) NOT NULL,
-	freno_del_der_grosor_pastilla_min DECIMAL(18,2) NOT NULL,
-	freno_del_der_grosor_pastilla_max DECIMAL(18,2) NOT NULL,
-	freno_tra_izq_grosor_pastilla_min DECIMAL(18,2) NOT NULL,
-	freno_tra_izq_grosor_pastilla_max DECIMAL(18,2) NOT NULL,
-	freno_tra_der_grosor_pastilla_min DECIMAL(18,2) NOT NULL,
-	freno_tra_der_grosor_pastilla_max DECIMAL(18,2) NOT NULL,
+	neumatico_del_izq_profundidad_min DECIMAL(18,6),
+	neumatico_del_izq_profundidad_max DECIMAL(18,6),
+	neumatico_del_der_profundidad_min DECIMAL(18,6),
+	neumatico_del_der_profundidad_max DECIMAL(18,6),
+	neumatico_tra_izq_profundidad_min DECIMAL(18,6),
+	neumatico_tra_izq_profundidad_max DECIMAL(18,6),
+	neumatico_tra_der_profundidad_min DECIMAL(18,6),
+	neumatico_tra_der_profundidad_max DECIMAL(18,6),
+	freno_del_izq_grosor_pastilla_min DECIMAL(18,2),
+	freno_del_izq_grosor_pastilla_max DECIMAL(18,2),
+	freno_del_der_grosor_pastilla_min DECIMAL(18,2),
+	freno_del_der_grosor_pastilla_max DECIMAL(18,2),
+	freno_tra_izq_grosor_pastilla_min DECIMAL(18,2),
+	freno_tra_izq_grosor_pastilla_max DECIMAL(18,2),
+	freno_tra_der_grosor_pastilla_min DECIMAL(18,2),
+	freno_tra_der_grosor_pastilla_max DECIMAL(18,2),
 	velocidad_max DECIMAL(18,2) NOT NULL,
 	combustible_min DECIMAL(18,2) NOT NULL,
 	combustible_max DECIMAL(18,2) NOT NULL,
@@ -289,10 +276,163 @@ BEGIN
 END;
 
 GO
+CREATE VIEW [Data_Center_Group].BI_FACT_AUX_Telemetria_Neumatico AS
+		SELECT 
+			tiempo.id tiempo_id, 
+			dim_auto.id auto_id, 
+			a.escuderia_nombre, 
+			a.piloto_codigo, 
+			t.sector_codigo, 
+			c.circuito_codigo, 
+			t.vuelta_numero,
+			MIN(
+				CASE tn.posicion 
+				WHEN 'Delantero Izquierdo' THEN tn.profundidad
+				ELSE NULL
+				END
+			) del_izq_min,
+			MAX(
+				CASE tn.posicion 
+				WHEN 'Delantero Izquierdo' THEN tn.profundidad
+				ELSE NULL
+				END
+			) del_izq_max,
+			MIN(
+				CASE tn.posicion 
+				WHEN 'Delantero Derecho' THEN tn.profundidad
+				ELSE NULL
+				END
+			) del_der_min,
+			MAX(
+				CASE tn.posicion 
+				WHEN 'Delantero Derecho' THEN tn.profundidad
+				ELSE NULL
+				END
+			) del_der_max,
+			MIN(
+				CASE tn.posicion 
+				WHEN 'Trasero Izquierdo' THEN tn.profundidad
+				ELSE NULL
+				END
+			) tra_izq_min,
+			MAX(
+				CASE tn.posicion 
+				WHEN 'Trasero Izquierdo' THEN tn.profundidad
+				ELSE NULL
+				END
+			) tra_izq_max,
+			MIN(
+				CASE tn.posicion 
+				WHEN 'Trasero Derecho' THEN tn.profundidad
+				ELSE NULL
+				END
+			) tra_der_min,
+			MAX(
+				CASE tn.posicion 
+				WHEN 'Trasero Derecho' THEN tn.profundidad
+				ELSE NULL
+				END
+			) tra_der_max
+		FROM [Data_Center_Group].Telemetria t
+		JOIN [Data_Center_Group].TelemetriaAuto ta ON ta.telemetria_codigo = t.codigo
+		JOIN [Data_Center_Group].TelemetriaNeumatico tn ON tn.telemetria_codigo = t.codigo
+		JOIN [Data_Center_Group].Carrera c ON c.codigo = t.carrera_codigo
+		JOIN [Data_Center_Group].Auto a ON a.numero = ta.auto_numero AND a.escuderia_nombre = ta.auto_escuderia_nombre
+		JOIN [Data_Center_Group].BI_DIM_Tiempo tiempo ON tiempo.anio = YEAR(c.fecha) AND tiempo.cuatrimestre = [Data_Center_Group].retornarCuatrimestre(c.fecha)
+		JOIN [Data_Center_Group].BI_DIM_Auto dim_auto ON dim_auto.numero = a.numero AND dim_auto.modelo = a.modelo
+		GROUP BY 
+			tiempo.id, 
+			dim_auto.id, 
+			a.escuderia_nombre, 
+			a.piloto_codigo, 
+			t.sector_codigo, 
+			c.circuito_codigo, 
+			t.vuelta_numero
+
+
+GO
+CREATE VIEW [Data_Center_Group].BI_FACT_AUX_Telemetria_Freno AS
+		SELECT 
+			tiempo.id tiempo_id, 
+			dim_auto.id auto_id, 
+			a.escuderia_nombre, 
+			a.piloto_codigo, 
+			t.sector_codigo, 
+			c.circuito_codigo, 
+			t.vuelta_numero,
+			MIN(
+				CASE tf.posicion 
+				WHEN 'Delantero Izquierdo' THEN tf.grosor_pastilla
+				ELSE NULL
+				END
+			) del_izq_min,
+			MAX(
+				CASE tf.posicion 
+				WHEN 'Delantero Izquierdo' THEN tf.grosor_pastilla
+				ELSE NULL
+				END
+			) del_izq_max,
+			MIN(
+				CASE tf.posicion 
+				WHEN 'Delantero Derecho' THEN tf.grosor_pastilla
+				ELSE NULL
+				END
+			) del_der_min,
+			MAX(
+				CASE tf.posicion 
+				WHEN 'Delantero Derecho' THEN tf.grosor_pastilla
+				ELSE NULL
+				END
+			) del_der_max,
+			MIN(
+				CASE tf.posicion 
+				WHEN 'Trasero Izquierdo' THEN tf.grosor_pastilla
+				ELSE NULL
+				END
+			) tra_izq_min,
+			MAX(
+				CASE tf.posicion 
+				WHEN 'Trasero Izquierdo' THEN tf.grosor_pastilla
+				ELSE NULL
+				END
+			) tra_izq_max,
+			MIN(
+				CASE tf.posicion 
+				WHEN 'Trasero Derecho' THEN tf.grosor_pastilla
+				ELSE NULL
+				END
+			) tra_der_min,
+			MAX(
+				CASE tf.posicion 
+				WHEN 'Trasero Derecho' THEN tf.grosor_pastilla
+				ELSE NULL
+				END
+			) tra_der_max
+		FROM [Data_Center_Group].Telemetria t
+		JOIN [Data_Center_Group].TelemetriaAuto ta ON ta.telemetria_codigo = t.codigo
+		JOIN [Data_Center_Group].TelemetriaFreno tf ON tf.telemetria_codigo = t.codigo
+		JOIN [Data_Center_Group].Carrera c ON c.codigo = t.carrera_codigo
+		JOIN [Data_Center_Group].Auto a ON a.numero = ta.auto_numero AND a.escuderia_nombre = ta.auto_escuderia_nombre
+		JOIN [Data_Center_Group].BI_DIM_Tiempo tiempo ON tiempo.anio = YEAR(c.fecha) AND tiempo.cuatrimestre = [Data_Center_Group].retornarCuatrimestre(c.fecha)
+		JOIN [Data_Center_Group].BI_DIM_Auto dim_auto ON dim_auto.numero = a.numero AND dim_auto.modelo = a.modelo
+		GROUP BY 
+			tiempo.id, 
+			dim_auto.id, 
+			a.escuderia_nombre, 
+			a.piloto_codigo, 
+			t.sector_codigo, 
+			c.circuito_codigo, 
+			t.vuelta_numero
+
+GO
 CREATE PROCEDURE [Data_Center_Group].cargarFACTTelemetrias
 AS
 BEGIN
-	INSERT INTO [Data_Center_Group].BI_FACT_Telemetria
+	INSERT INTO [Data_Center_Group].BI_FACT_Telemetria (
+		tiempo_id, auto_id, escuderia_nombre, piloto_codigo, sector_codigo, circuito_codigo,
+		numero_vuelta, tiempo_vuelta, caja_desgaste_promedio, caja_desgaste_cantidad, motor_potencia_min,
+		motor_potencia_max, velocidad_max, combustible_min, combustible_max
+	)
 	SELECT 
 		tiempo.id, 
 		dim_auto.id, 
@@ -303,104 +443,9 @@ BEGIN
 		t.vuelta_numero,
 		MIN(t.vuelta_tiempo),
 		AVG(tc.desgaste),
+		COUNT(tc.desgaste),
 		MIN(tm.potencia),
 		MAX(tm.potencia),
-		MIN(
-			CASE tn.posicion 
-			WHEN 'Delantero Izquierdo' THEN tn.profundidad
-			ELSE NULL
-			END
-		),
-		MAX(
-			CASE tn.posicion 
-			WHEN 'Delantero Izquierdo' THEN tn.profundidad
-			ELSE NULL
-			END
-		),
-		MIN(
-			CASE tn.posicion 
-			WHEN 'Delantero Derecho' THEN tn.profundidad
-			ELSE NULL
-			END
-		),
-		MAX(
-			CASE tn.posicion 
-			WHEN 'Delantero Derecho' THEN tn.profundidad
-			ELSE NULL
-			END
-		),
-		MIN(
-			CASE tn.posicion 
-			WHEN 'Trasero Izquierdo' THEN tn.profundidad
-			ELSE NULL
-			END
-		),
-		MAX(
-			CASE tn.posicion 
-			WHEN 'Trasero Izquierdo' THEN tn.profundidad
-			ELSE NULL
-			END
-		),
-		MIN(
-			CASE tn.posicion 
-			WHEN 'Trasero Derecho' THEN tn.profundidad
-			ELSE NULL
-			END
-		),
-		MAX(
-			CASE tn.posicion 
-			WHEN 'Trasero Derecho' THEN tn.profundidad
-			ELSE NULL
-			END
-		),
-		MIN(
-			CASE tf.posicion 
-			WHEN 'Delantero Izquierdo' THEN tf.grosor_pastilla
-			ELSE NULL
-			END
-		),
-		MAX(
-			CASE tf.posicion 
-			WHEN 'Delantero Izquierdo' THEN tf.grosor_pastilla
-			ELSE NULL
-			END
-		),
-		MIN(
-			CASE tf.posicion 
-			WHEN 'Delantero Derecho' THEN tf.grosor_pastilla
-			ELSE NULL
-			END
-		),
-		MAX(
-			CASE tf.posicion 
-			WHEN 'Delantero Derecho' THEN tf.grosor_pastilla
-			ELSE NULL
-			END
-		),
-		MIN(
-			CASE tf.posicion 
-			WHEN 'Trasero Izquierdo' THEN tf.grosor_pastilla
-			ELSE NULL
-			END
-		),
-		MAX(
-			CASE tf.posicion 
-			WHEN 'Trasero Izquierdo' THEN tf.grosor_pastilla
-			ELSE NULL
-			END
-		),
-		MIN(
-			CASE tf.posicion 
-			WHEN 'Trasero Derecho' THEN tf.grosor_pastilla
-			ELSE NULL
-			END
-		),
-		MAX(
-			CASE tf.posicion 
-			WHEN 'Trasero Derecho' THEN tf.grosor_pastilla
-			ELSE NULL
-			END
-		),
 		MAX(ta.velocidad),
 		MIN(ta.combustible),
 		MAX(ta.combustible)
@@ -408,8 +453,6 @@ BEGIN
 	JOIN [Data_Center_Group].TelemetriaAuto ta ON ta.telemetria_codigo = t.codigo
 	JOIN [Data_Center_Group].TelemetriaCaja tc ON tc.telemetria_codigo = t.codigo
 	JOIN [Data_Center_Group].TelemetriaMotor tm ON tm.telemetria_codigo = t.codigo
-	JOIN [Data_Center_Group].TelemetriaNeumatico tn ON tn.telemetria_codigo = t.codigo
-	JOIN [Data_Center_Group].TelemetriaFreno tf ON tf.telemetria_codigo = t.codigo
 	JOIN [Data_Center_Group].Carrera c ON c.codigo = t.carrera_codigo
 	JOIN [Data_Center_Group].Auto a ON a.numero = ta.auto_numero AND a.escuderia_nombre = ta.auto_escuderia_nombre
 	JOIN [Data_Center_Group].BI_DIM_Tiempo tiempo ON tiempo.anio = YEAR(c.fecha) AND tiempo.cuatrimestre = [Data_Center_Group].retornarCuatrimestre(c.fecha)
@@ -422,6 +465,44 @@ BEGIN
 		t.sector_codigo, 
 		c.circuito_codigo, 
 		t.vuelta_numero
+
+	UPDATE [Data_Center_Group].BI_FACT_Telemetria
+	SET 
+		neumatico_del_izq_profundidad_min = tn.del_izq_min,
+		neumatico_del_izq_profundidad_max = tn.del_izq_max,
+		neumatico_del_der_profundidad_min = tn.del_der_min,
+		neumatico_del_der_profundidad_max = tn.del_der_max,
+		neumatico_tra_izq_profundidad_min = tn.tra_izq_min,
+		neumatico_tra_izq_profundidad_max = tn.tra_izq_max,
+		neumatico_tra_der_profundidad_min = tn.tra_der_min,
+		neumatico_tra_der_profundidad_max = tn.tra_der_max
+	FROM [Data_Center_Group].BI_FACT_AUX_Telemetria_Neumatico tn
+	WHERE [Data_Center_Group].BI_FACT_Telemetria.tiempo_id = tn.tiempo_id
+	AND [Data_Center_Group].BI_FACT_Telemetria.auto_id = tn.auto_id
+	AND [Data_Center_Group].BI_FACT_Telemetria.escuderia_nombre = tn.escuderia_nombre
+	AND [Data_Center_Group].BI_FACT_Telemetria.piloto_codigo = tn.piloto_codigo
+	AND [Data_Center_Group].BI_FACT_Telemetria.sector_codigo = tn.sector_codigo
+	AND [Data_Center_Group].BI_FACT_Telemetria.circuito_codigo = tn.circuito_codigo
+	AND [Data_Center_Group].BI_FACT_Telemetria.numero_vuelta = tn.vuelta_numero
+
+	UPDATE [Data_Center_Group].BI_FACT_Telemetria
+	SET 
+		freno_del_izq_grosor_pastilla_min = tf.del_izq_min,
+		freno_del_izq_grosor_pastilla_max = tf.del_izq_max,
+		freno_del_der_grosor_pastilla_min = tf.del_der_min,
+		freno_del_der_grosor_pastilla_max = tf.del_der_max,
+		freno_tra_izq_grosor_pastilla_min = tf.tra_izq_min,
+		freno_tra_izq_grosor_pastilla_max = tf.tra_izq_max,
+		freno_tra_der_grosor_pastilla_min = tf.tra_der_min,
+		freno_tra_der_grosor_pastilla_max = tf.tra_der_max
+	FROM [Data_Center_Group].BI_FACT_AUX_Telemetria_Freno tf
+	WHERE [Data_Center_Group].BI_FACT_Telemetria.tiempo_id = tf.tiempo_id
+	AND [Data_Center_Group].BI_FACT_Telemetria.auto_id = tf.auto_id
+	AND [Data_Center_Group].BI_FACT_Telemetria.escuderia_nombre = tf.escuderia_nombre
+	AND [Data_Center_Group].BI_FACT_Telemetria.piloto_codigo = tf.piloto_codigo
+	AND [Data_Center_Group].BI_FACT_Telemetria.sector_codigo = tf.sector_codigo
+	AND [Data_Center_Group].BI_FACT_Telemetria.circuito_codigo = tf.circuito_codigo
+	AND [Data_Center_Group].BI_FACT_Telemetria.numero_vuelta = tf.vuelta_numero
 END;
 
 GO
@@ -490,6 +571,9 @@ DROP PROCEDURE [Data_Center_Group].cargarFACTTelemetrias;
 DROP PROCEDURE [Data_Center_Group].cargarFACTParadas;
 DROP PROCEDURE [Data_Center_Group].cargarFACTIncidenteAutos;
 
+DROP VIEW [Data_Center_Group].BI_FACT_AUX_Telemetria_Neumatico;
+DROP VIEW [Data_Center_Group].BI_FACT_AUX_Telemetria_Freno;
+
 DROP FUNCTION [Data_Center_Group].retornarCuatrimestre;
 DROP FUNCTION [Data_Center_Group].retornarNeumaticoDeTelemetria;
 DROP FUNCTION [Data_Center_Group].retornarProfundidadDeTelemetriaNeumatico;
@@ -505,7 +589,7 @@ CREATE VIEW [Data_Center_Group].BI_VIEW_DesgasteComponentes AS
 		c.nombre as Circuito, 
 		t.escuderia_nombre as Escuderia, 
 		a.numero as 'Auto N°', t.numero_vuelta, 
-		AVG(t.caja_desgaste) as 'Caja - Desgaste',
+		SUM(t.caja_desgaste_promedio * t.caja_desgaste_cantidad) / SUM(t.caja_desgaste_cantidad) as 'Caja - Desgaste',
 		MAX(t.motor_potencia_max) - MIN(T.motor_potencia_min) 'Motor - Desgaste',
 		MAX(t.neumatico_del_izq_profundidad_max) - MIN(T.neumatico_del_izq_profundidad_min) 'Neumatico Del. Izq. - Desgaste',
 		MAX(t.neumatico_del_der_profundidad_max) - MIN(T.neumatico_del_der_profundidad_min) 'Neumatico Del. Der. - Desgaste', 
@@ -523,22 +607,23 @@ CREATE VIEW [Data_Center_Group].BI_VIEW_DesgasteComponentes AS
 --Mejor tiempo de vuelta de cada escuderia por circuito por año
 
 GO
-CREATE VIEW [Data_Center_Group].BI_VIEW_AUX_MejorTiempoCadaVuelta AS
-	SELECT tiempo.anio as anio, c.nombre as circuito, e.nombre as escuderia,  MAX(t.tiempo_vuelta) as mejor_tiempo_vuelta
-	FROM [Data_Center_Group].BI_FACT_Telemetria t
-	JOIN [Data_Center_Group].BI_DIM_Tiempo tiempo ON tiempo.id = t.tiempo_id
-	JOIN [Data_Center_Group].BI_DIM_Circuito c ON c.codigo = t.circuito_codigo
-	JOIN [Data_Center_Group].BI_DIM_Escuderia e ON e.nombre = t.escuderia_nombre
-	GROUP BY tiempo.anio, e.nombre, c.nombre, t.numero_vuelta
-
-GO
 CREATE VIEW [Data_Center_Group].BI_VIEW_MejorTiempoVuelta AS
-	SELECT tiempo.anio as 'Año', c.nombre as Circuito, e.nombre as Escuderia, MAX(t.tiempo_vuelta) as 'Mejor tiempo'
+	SELECT 
+	tiempo.anio as 'Año', 
+	c.nombre as Circuito, 
+	e.nombre as Escuderia, 
+	(
+		SELECT TOP 1 MAX(t1.tiempo_vuelta) FROM [Data_Center_Group].BI_FACT_Telemetria t1
+		JOIN [Data_Center_Group].BI_DIM_Tiempo tiempo1 ON tiempo1.id = t1.tiempo_id
+		WHERE tiempo1.anio = tiempo.anio AND t1.circuito_codigo = c.codigo AND t1.escuderia_nombre = e.nombre
+		GROUP BY t1.numero_vuelta
+		ORDER BY MAX(t1.tiempo_vuelta) ASC
+	) as 'Mejor tiempo' 
 	FROM [Data_Center_Group].BI_FACT_Telemetria t
 	JOIN [Data_Center_Group].BI_DIM_Tiempo tiempo ON tiempo.id = t.tiempo_id
 	JOIN [Data_Center_Group].BI_DIM_Circuito c ON c.codigo = t.circuito_codigo
 	JOIN [Data_Center_Group].BI_DIM_Escuderia e ON e.nombre = t.escuderia_nombre
-	GROUP BY tiempo.anio, c.nombre, e.nombre
+	GROUP BY tiempo.anio, c.codigo, c.nombre, e.nombre
 
 
 -- los 3 circuitos con mayor consumo de combustible promedio
